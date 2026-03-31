@@ -171,9 +171,7 @@ class FeedViewModel: ObservableObject {
             WaveStore.shared.seed(moments: moments)
             CommentStore.shared.seed(moments: moments)
         } catch is CancellationError {
-            // pull-to-refresh 취소 시 — 조용히 무시
         } catch let urlError as URLError where urlError.code == .cancelled {
-            // URLSession 취소 시 — 조용히 무시
         } catch {
             self.errorMessage = error.localizedDescription
         }

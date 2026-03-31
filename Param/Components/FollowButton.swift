@@ -44,16 +44,9 @@ struct FollowButton: View {
         Task {
             do {
                 if isFollowing {
-                    let _: FollowRelation = try await APIClient.shared.post(
-                        "/users/\(targetUserID)/follow",
-                        body: EmptyBody(),
-                        userID: myID
-                    )
+                    try await APIClient.shared.routeFollow(followerID: myID, followingID: targetUserID)
                 } else {
-                    try await APIClient.shared.delete(
-                        "/users/\(targetUserID)/follow",
-                        userID: myID
-                    )
+                    try await APIClient.shared.routeUnfollow(followerID: myID, followingID: targetUserID)
                 }
             } catch {
                 // 실패 시 롤백

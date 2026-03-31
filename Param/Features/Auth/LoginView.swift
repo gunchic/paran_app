@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct LoginView: View {
-    let onNewUser: () -> Void
+    let onNewUser:      () -> Void
     let onExistingUser: () -> Void
 
     @EnvironmentObject var appState: AppState
 
-    @State private var isLoading = false
+    @State private var isLoading    = false
     @State private var errorMessage: String?
 
     var body: some View {
@@ -48,7 +48,7 @@ struct LoginView: View {
                         bg: Color(red: 1.0, green: 0.898, blue: 0),
                         fg: .black,
                         isLoading: isLoading
-                    ) { handleSocialLogin(provider: "kakao") }
+                    ) { handleLogin(provider: "kakao") }
 
                     SocialButton(
                         label: "네이버로 계속하기",
@@ -57,7 +57,7 @@ struct LoginView: View {
                         bg: Color(red: 0.012, green: 0.780, blue: 0.353),
                         fg: .white,
                         isLoading: isLoading
-                    ) { handleSocialLogin(provider: "naver") }
+                    ) { handleLogin(provider: "naver") }
 
                     SocialButton(
                         label: "구글로 계속하기",
@@ -67,7 +67,7 @@ struct LoginView: View {
                         fg: .black,
                         hasBorder: true,
                         isLoading: isLoading
-                    ) { handleSocialLogin(provider: "google") }
+                    ) { handleLogin(provider: "google") }
                 }
                 .padding(.horizontal, 24)
                 .disabled(isLoading)
@@ -86,22 +86,20 @@ struct LoginView: View {
 
     // MARK: - 소셜 로그인
 
-    private func handleSocialLogin(provider: String) {
-        isLoading = true
+    private func handleLogin(provider: String) {
+        isLoading    = true
         errorMessage = nil
 
         Task {
             do {
-                let code: String
+                let session: SupabaseSession
                 switch provider {
-                case "kakao":  code = try await AuthService.shared.loginWithKakao()
-                case "naver":  code = try await AuthService.shared.loginWithNaver()
-                case "google": code = try await AuthService.shared.loginWithGoogle()
+                case "kakao":  session = try await AuthService.shared.loginWithKakao()
+                case "naver":  session = try await AuthService.shared.loginWithNaver()
+                case "google": session = try await AuthService.shared.loginWithGoogle()
                 default: return
                 }
-
-                let result = try await APIClient.shared.socialLogin(provider: provider, code: code)
-                route(result: result)
+                await routeAfterLogin(session: session)
             } catch {
                 let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
                 errorMessage = "로그인 실패: \(msg)"
@@ -110,28 +108,41 @@ struct LoginView: View {
         }
     }
 
-    // MARK: - 응답에 따라 화면 전환
+    // MARK: - 로그인 후 화면 전환
 
-    private func route(result: SocialAuthResponse) {
-        appState.currentUserID          = result.id
-        appState.currentNickname        = result.nickname ?? ""
-        appState.currentProfileImageURL = result.profileImageUrl
-        appState.pendingUserID          = nil
-        onExistingUser()
+    @MainActor
+    private func routeAfterLogin(session: SupabaseSession) async {
+        do {
+            let (userID, nickname, profileImageURL) =
+                try await AuthService.shared.fetchOrCreateProfile(session: session)
+
+            if let nick = nickname, !nick.isEmpty {
+                // 기존 유저 → 메인 앱
+                appState.updateProfile(userID: userID, nickname: nick, profileImageURL: profileImageURL)
+                onExistingUser()
+            } else {
+                // 신규 유저 → 프로필 설정
+                appState.pendingUserID = userID
+                appState.currentUserID = userID
+                onNewUser()
+            }
+        } catch {
+            errorMessage = "프로필 조회 실패: \(error.localizedDescription)"
+        }
     }
 }
 
 // MARK: - 소셜 버튼
 
 private struct SocialButton: View {
-    let label: String
-    let badge: String
+    let label:        String
+    let badge:        String
     let badgeIsEmoji: Bool
-    let bg: Color
-    let fg: Color
-    var hasBorder: Bool = false
-    var isLoading: Bool = false
-    let action: () -> Void
+    let bg:           Color
+    let fg:           Color
+    var hasBorder:    Bool = false
+    var isLoading:    Bool = false
+    let action:       () -> Void
 
     var body: some View {
         Button(action: action) {

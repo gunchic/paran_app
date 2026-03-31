@@ -5,11 +5,11 @@ struct ProfileSetupView: View {
     @EnvironmentObject var appState: AppState
     let onComplete: () -> Void
 
-    @State private var nickname = ""
-    @State private var selectedPhoto: PhotosPickerItem?
-    @State private var profileImage: UIImage?
-    @State private var isLoading = false
-    @State private var errorMessage: String?
+    @State private var nickname       = ""
+    @State private var selectedPhoto:  PhotosPickerItem?
+    @State private var profileImage:   UIImage?
+    @State private var isLoading      = false
+    @State private var errorMessage:  String?
 
     private var canProceed: Bool {
         !nickname.trimmingCharacters(in: .whitespaces).isEmpty && !isLoading
@@ -22,7 +22,6 @@ struct ProfileSetupView: View {
             VStack(spacing: 0) {
                 Spacer().frame(height: 60)
 
-                // 타이틀
                 VStack(spacing: 8) {
                     Text("파람을 시작해볼게요")
                         .font(.system(size: 24, weight: .black))
@@ -34,7 +33,6 @@ struct ProfileSetupView: View {
 
                 Spacer().frame(height: 48)
 
-                // 프로필 이미지
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
                     VStack(spacing: 10) {
                         ZStack {
@@ -67,7 +65,6 @@ struct ProfileSetupView: View {
 
                 Spacer().frame(height: 40)
 
-                // 닉네임 입력
                 VStack(alignment: .trailing, spacing: 6) {
                     TextField("닉네임을 입력하세요", text: $nickname)
                         .autocorrectionDisabled()
@@ -96,8 +93,7 @@ struct ProfileSetupView: View {
 
                 Spacer()
 
-                // CTA
-                Button(action: createUser) {
+                Button(action: saveProfile) {
                     Group {
                         if isLoading {
                             ProgressView().tint(.white)
@@ -121,60 +117,43 @@ struct ProfileSetupView: View {
         }
     }
 
-    // MARK: - Types
+    // MARK: - 프로필 저장
 
-    private struct UserRequest: Encodable {
-        let nickname: String
-        let profileImageUrl: String?
-    }
-
-    private struct UserResponse: Decodable {
-        let id: String
-        let nickname: String
-        let profileImageUrl: String?
-    }
-
-    // MARK: - Action
-
-    private func createUser() {
-        isLoading = true
+    private func saveProfile() {
+        isLoading    = true
         errorMessage = nil
         Task {
             do {
+                guard let userID = appState.pendingUserID ?? appState.currentUserID else {
+                    throw APIError.invalidResponse
+                }
+
+                // 프로필 이미지 업로드
                 var profileImageUrl: String? = nil
                 if let image = profileImage {
-                    // 이미지 업로드 시 현재 유저 ID (소셜 로그인 유저는 pendingUserID 사용)
-                    let uploaderID = appState.pendingUserID
-                    profileImageUrl = try await APIClient.shared.uploadImage(image, userID: uploaderID)
+                    profileImageUrl = try await APIClient.shared.uploadImage(image, userID: userID)
                 }
 
-                let body = UserRequest(
-                    nickname: nickname.trimmingCharacters(in: .whitespaces),
-                    profileImageUrl: profileImageUrl
+                // users 테이블 업데이트 (트리거로 이미 행이 생성돼 있음)
+                let nick = nickname.trimmingCharacters(in: .whitespaces)
+                struct UserReq: Encodable { let nickname: String; let profileImageUrl: String? }
+                let updated: User = try await APIClient.shared.put(
+                    "/users/\(userID)",
+                    body: UserReq(nickname: nick, profileImageUrl: profileImageUrl),
+                    userID: userID
                 )
 
-                let res: UserResponse
-                if let existingID = appState.pendingUserID {
-                    // 소셜 로그인으로 이미 생성된 유저 → 프로필 업데이트
-                    res = try await APIClient.shared.put(
-                        "/users/\(existingID)",
-                        body: body,
-                        userID: existingID
-                    )
-                } else {
-                    // 일반 신규 유저 → 새로 생성
-                    res = try await APIClient.shared.post("/users", body: body)
-                }
-
-                appState.currentUserID          = res.id
-                appState.currentNickname        = res.nickname
-                appState.currentProfileImageURL = res.profileImageUrl
-                appState.pendingUserID          = nil
+                appState.updateProfile(
+                    userID: updated.id,
+                    nickname: updated.nickname,
+                    profileImageURL: updated.profileImageUrl
+                )
                 onComplete()
             } catch {
-                errorMessage = "연결 실패: \(error.localizedDescription)"
+                errorMessage = "저장 실패: \(error.localizedDescription)"
             }
             isLoading = false
         }
     }
 }
+

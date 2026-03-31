@@ -188,17 +188,13 @@ class FollowListViewModel: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         users = (try? await APIClient.shared.get(
-            "/users/\(userID)/followers",
-            userID: viewerID
-        )) ?? []
+            "/users/\(userID)/followers", userID: viewerID)) ?? []
     }
 
     func loadFollowing(userID: String, viewerID: String?) async {
         isLoading = true
         defer { isLoading = false }
         users = (try? await APIClient.shared.get(
-            "/users/\(userID)/following",
-            userID: viewerID
-        )) ?? []
+            "/users/\(userID)/following", userID: viewerID)) ?? []
     }
 }

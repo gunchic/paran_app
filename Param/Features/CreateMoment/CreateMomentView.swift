@@ -348,6 +348,13 @@ struct CreateMomentView: View {
                 // 위치 비동기 취득 (최대 3초, 선택)
                 let loc = await LocationManager.shared.locationAsync(timeout: 3.0)
 
+                // 입력 중인 태그 자동 커밋 (Enter/추가 누르지 않은 경우 대비)
+                let pendingTag = tagInput.trimmingCharacters(in: .whitespaces)
+                if !pendingTag.isEmpty && !tags.contains(pendingTag) {
+                    tags.append(pendingTag)
+                    tagInput = ""
+                }
+
                 // 본문에서 #태그 자동 파싱 → 수동 추가된 태그와 병합
                 let bodyParsedTags = parseHashtags(from: bodyText)
                 let allTags = tags + bodyParsedTags.filter { !tags.contains($0) }
