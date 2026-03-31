@@ -320,7 +320,9 @@ struct MomentCard: View {
     // ── 썸네일 ───────────────────────────────────────────
     @ViewBuilder
     private var thumbnailView: some View {
-        if let imageUrl = moment.imageUrl, let url = resolvedURL(imageUrl) {
+        // 피드 카드에는 썸네일(200×200) 우선, 없으면 압축본 사용
+        let feedImageUrl = moment.thumbnailUrl ?? moment.imageUrl
+        if let imageUrl = feedImageUrl, let url = resolvedURL(imageUrl) {
             CachedImage(url: url) { image in
                 image.resizable().scaledToFill()
             } placeholder: {

@@ -77,17 +77,24 @@ class APIClient {
         guard let imageData = image.jpegData(compressionQuality: 0.8) else {
             throw URLError(.cannotCreateFile)
         }
-        var request = buildRequest("/upload", method: "POST", userID: userID)
+        return try await uploadImageData(imageData, path: nil, userID: userID)
+    }
+
+    /// 압축된 Data를 직접 업로드. path 지정 시 서버에 해당 경로로 저장.
+    /// path 예: "waves/{userID}/{momentID}/thumbnail.jpg"
+    func uploadImageData(_ data: Data, path: String?, userID: String? = nil) async throws -> String {
+        let query = path.map { "?path=\($0.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0)" } ?? ""
+        var request = buildRequest("/upload\(query)", method: "POST", userID: userID)
         let boundary = UUID().uuidString
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.httpBody = makeMultipartBody(data: imageData, boundary: boundary)
+        request.httpBody = makeMultipartBody(data: data, boundary: boundary)
 
-        let (data, response) = try await uploadSession.data(for: request)
-        try checkHTTP(response, data)
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: String],
-              let imageUrl = json["url"]
+        let (responseData, response) = try await uploadSession.data(for: request)
+        try checkHTTP(response, responseData)
+        guard let json = try? JSONSerialization.jsonObject(with: responseData) as? [String: String],
+              let url = json["url"]
         else { throw URLError(.badServerResponse) }
-        return imageUrl
+        return url
     }
 
     // MARK: - Private

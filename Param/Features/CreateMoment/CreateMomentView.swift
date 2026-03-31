@@ -42,7 +42,9 @@ struct CreateMomentView: View {
 
     // 사진
     @State private var selectedPhoto: PhotosPickerItem?
-    @State private var selectedImage: UIImage?
+    @State private var selectedImage: UIImage?        // 원본 (PhotosPicker에서 받은 것)
+    @State private var compressed: ImageCompressor.Result? = nil
+    @State private var isCompressing = false
 
     // YouTube
     @State private var youtubeURL = ""
@@ -154,12 +156,31 @@ struct CreateMomentView: View {
                 .font(.headline)
             PhotosPicker(selection: $selectedPhoto, matching: .images) {
                 if let image = selectedImage {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 160)
-                        .clipped()
-                        .cornerRadius(12)
+                    ZStack {
+                        // 썸네일 미리보기 (압축 완료 시) 또는 원본
+                        let preview: UIImage = {
+                            if let d = compressed?.thumbnail, let img = UIImage(data: d) { return img }
+                            return image
+                        }()
+                        Image(uiImage: preview)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 160)
+                            .clipped()
+                            .cornerRadius(12)
+
+                        // 압축 중 로딩 오버레이
+                        if isCompressing {
+                            Color.black.opacity(0.4)
+                                .cornerRadius(12)
+                            VStack(spacing: 8) {
+                                ProgressView().tint(.white)
+                                Text("이미지 처리 중...")
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                    }
                 } else {
                     HStack {
                         Spacer()
@@ -175,9 +196,13 @@ struct CreateMomentView: View {
             }
             .onChange(of: selectedPhoto) { _, item in
                 Task {
-                    if let data = try? await item?.loadTransferable(type: Data.self) {
-                        selectedImage = UIImage(data: data)
-                    }
+                    guard let data = try? await item?.loadTransferable(type: Data.self),
+                          let image = UIImage(data: data) else { return }
+                    selectedImage = image
+                    compressed = nil
+                    isCompressing = true
+                    compressed = await ImageCompressor.compress(image)
+                    isCompressing = false
                 }
             }
         }
@@ -297,9 +322,27 @@ struct CreateMomentView: View {
         Task {
             do {
                 // 이미지 업로드 (사진 탭일 때만)
-                var imageUrl: String? = nil
-                if contentType == .photo, let image = selectedImage {
-                    imageUrl = try await APIClient.shared.uploadImage(image, userID: userID)
+                // 압축본이 있으면 thumbnail + image 두 버전 업로드, 없으면 원본 단일 업로드
+                var imageUrl: String?     = nil
+                var thumbnailUrl: String? = nil
+                if contentType == .photo {
+                    let momentPath = "waves/\(userID)/\(UUID().uuidString)"
+                    if let c = compressed {
+                        async let thumbUpload = APIClient.shared.uploadImageData(
+                            c.thumbnail,
+                            path: "\(momentPath)/thumbnail.jpg",
+                            userID: userID
+                        )
+                        async let imageUpload = APIClient.shared.uploadImageData(
+                            c.image,
+                            path: "\(momentPath)/image.jpg",
+                            userID: userID
+                        )
+                        thumbnailUrl = try await thumbUpload
+                        imageUrl     = try await imageUpload
+                    } else if let image = selectedImage {
+                        imageUrl = try await APIClient.shared.uploadImage(image, userID: userID)
+                    }
                 }
 
                 // 위치 비동기 취득 (최대 3초, 선택)
@@ -312,6 +355,7 @@ struct CreateMomentView: View {
                 let req = CreateMomentRequest(
                     body: bodyText.isEmpty ? nil : bodyText,
                     imageUrl: imageUrl,
+                    thumbnailUrl: thumbnailUrl,
                     location: nil,
                     latitude: loc?.coordinate.latitude,
                     longitude: loc?.coordinate.longitude,

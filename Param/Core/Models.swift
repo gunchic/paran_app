@@ -6,7 +6,8 @@ struct Moment: Identifiable, Codable {
     let authorNickname: String?
     let authorProfileImageUrl: String?
     let body: String?
-    let imageUrl: String?
+    let imageUrl: String?       // 압축본 800×800 (상세화면용)
+    let thumbnailUrl: String?   // 썸네일 200×200 (피드 카드용)
     let location: String?
     let latitude: Double?
     let longitude: Double?
@@ -75,6 +76,7 @@ struct User: Identifiable, Codable {
 struct CreateMomentRequest: Encodable {
     let body: String?
     let imageUrl: String?
+    let thumbnailUrl: String?
     let location: String?
     let latitude: Double?
     let longitude: Double?
