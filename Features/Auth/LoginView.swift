@@ -21,12 +21,12 @@ struct LoginView: View {
                         // TODO: Google OAuth
                         onLogin()
                     }
-                    .buttonStyle(.primary)
+                    .buttonStyle(.paramPrimary)
 
                     Button("나중에 하기") {
                         onLogin()
                     }
-                    .buttonStyle(.ghost)
+                    .buttonStyle(.paramGhost)
                 }
             }
             .padding(Spacing.lg)
