@@ -28,14 +28,14 @@ struct CreateWaveView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("취소") { dismiss() }
-                        .buttonStyle(.paramGhost)
+                        .buttonStyle(.ghost)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("올리기") {
                         // TODO: Wave 저장
                         dismiss()
                     }
-                    .buttonStyle(.paramPrimary)
+                    .buttonStyle(.primary)
                     .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }

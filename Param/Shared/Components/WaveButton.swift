@@ -19,6 +19,6 @@ struct WaveButton: View {
                 }
             }
         }
-        .buttonStyle(.ghost)
+        .buttonStyle(.paramGhost)
     }
 }

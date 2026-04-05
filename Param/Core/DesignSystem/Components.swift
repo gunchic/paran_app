@@ -6,48 +6,49 @@ import SwiftUI
 // - 글래스모피즘 → 헤더에만 제한 적용
 // - 다크 모드 우선
 
-// MARK: - PrimaryButtonStyle
-struct PrimaryButtonStyle: ButtonStyle {
+// MARK: - ParamPrimaryButtonStyle
+struct ParamPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.paramBody.weight(.bold))
-            .foregroundColor(.void)
-            .padding(.vertical, Spacing.sm)
-            .padding(.horizontal, Spacing.md)
-            .background(configuration.isPressed ? Color.wave600 : Color.wave400)
-            .clipShape(Capsule())
+            .font(.system(size: 15, weight: .bold))
+            .foregroundColor(Color.void)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 24)
+            .background(Color.wave400)
+            .cornerRadius(100)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
-// MARK: - OutlineButtonStyle
+// MARK: - ParamOutlineButtonStyle
 // 버튼은 경계선 예외 허용
-struct OutlineButtonStyle: ButtonStyle {
+struct ParamOutlineButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.paramBody)
-            .foregroundColor(.mist)
-            .padding(.vertical, Spacing.sm)
-            .padding(.horizontal, Spacing.md)
-            .background(Color.clear)
+            .font(.system(size: 15, weight: .bold))
+            .foregroundColor(Color.mist)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 24)
             .overlay(
                 Capsule()
                     .stroke(Color.stone, lineWidth: 1)
             )
-            .opacity(configuration.isPressed ? 0.7 : 1)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
-// MARK: - GhostButtonStyle
-struct GhostButtonStyle: ButtonStyle {
+// MARK: - ParamGhostButtonStyle
+struct ParamGhostButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.paramBody)
-            .foregroundColor(.ash)
-            .padding(.vertical, Spacing.sm)
-            .padding(.horizontal, Spacing.md)
-            .background(Color.clear)
-            .opacity(configuration.isPressed ? 0.5 : 1)
+            .font(.system(size: 15, weight: .regular))
+            .foregroundColor(Color.ash)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 24)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
@@ -108,14 +109,14 @@ extension View {
     }
 }
 
-extension ButtonStyle where Self == PrimaryButtonStyle {
-    static var primary: PrimaryButtonStyle { PrimaryButtonStyle() }
+extension ButtonStyle where Self == ParamPrimaryButtonStyle {
+    static var paramPrimary: ParamPrimaryButtonStyle { .init() }
 }
 
-extension ButtonStyle where Self == OutlineButtonStyle {
-    static var outline: OutlineButtonStyle { OutlineButtonStyle() }
+extension ButtonStyle where Self == ParamOutlineButtonStyle {
+    static var paramOutline: ParamOutlineButtonStyle { .init() }
 }
 
-extension ButtonStyle where Self == GhostButtonStyle {
-    static var ghost: GhostButtonStyle { GhostButtonStyle() }
+extension ButtonStyle where Self == ParamGhostButtonStyle {
+    static var paramGhost: ParamGhostButtonStyle { .init() }
 }

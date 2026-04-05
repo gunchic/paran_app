@@ -20,19 +20,11 @@ struct UserProfileView: View {
                             .heading2Style()
                             .foregroundColor(.mist)
 
-                        if isFollowing {
-                            Button("팔로잉") {
-                                isFollowing.toggle()
-                                // TODO: 팔로우 API
-                            }
-                            .buttonStyle(.paramOutline)
-                        } else {
-                            Button("팔로우") {
-                                isFollowing.toggle()
-                                // TODO: 팔로우 API
-                            }
-                            .buttonStyle(.paramPrimary)
+                        Button(isFollowing ? "팔로잉" : "팔로우") {
+                            isFollowing.toggle()
+                            // TODO: 팔로우 API
                         }
+                        .buttonStyle(isFollowing ? .outline : .primary)
                     }
                     .padding(.top, Spacing.md)
 

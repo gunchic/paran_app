@@ -30,7 +30,7 @@ struct ProfileSetupView: View {
                     // TODO: 프로필 저장
                     onComplete()
                 }
-                .buttonStyle(.paramPrimary)
+                .buttonStyle(.primary)
                 .disabled(nickname.isEmpty)
             }
             .padding(Spacing.lg)

@@ -59,14 +59,14 @@ struct CrewCreateView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("취소") { dismiss() }
-                        .buttonStyle(.paramGhost)
+                        .buttonStyle(.ghost)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("만들기") {
                         // TODO: 크루 생성
                         dismiss()
                     }
-                    .buttonStyle(.paramPrimary)
+                    .buttonStyle(.primary)
                     .disabled(crewName.isEmpty)
                 }
             }

@@ -51,7 +51,7 @@ struct CrewProfileView: View {
                 Button("가입") {
                     // TODO: 크루 가입
                 }
-                .buttonStyle(.paramPrimary)
+                .buttonStyle(.primary)
             }
         }
     }

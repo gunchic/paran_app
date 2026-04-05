@@ -21,7 +21,7 @@ struct OnboardingView: View {
                 Spacer()
 
                 Button("시작하기", action: onFinish)
-                    .buttonStyle(.paramPrimary)
+                    .buttonStyle(.primary)
             }
             .padding(Spacing.lg)
         }
