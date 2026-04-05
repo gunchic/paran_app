@@ -12,7 +12,20 @@ final class AuthManager: ObservableObject {
     private var supabase: SupabaseClient { SupabaseManager.shared.client }
 
     init() {
-        Task { await startAuthListener() }
+        Task {
+            await clearKeychainIfFreshInstall()
+            await startAuthListener()
+        }
+    }
+
+    /// 앱 재설치 감지: UserDefaults는 삭제 시 초기화되지만 Keychain은 남아있음
+    /// 첫 실행 플래그가 없으면 재설치로 판단하고 Supabase 세션 초기화
+    private func clearKeychainIfFreshInstall() async {
+        let key = "param_has_launched"
+        if !UserDefaults.standard.bool(forKey: key) {
+            try? await supabase.auth.signOut()
+            UserDefaults.standard.set(true, forKey: key)
+        }
     }
 
     // MARK: - Supabase Auth 상태 리스너
