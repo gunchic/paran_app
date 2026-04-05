@@ -7,7 +7,7 @@ struct WaveCardView: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Text(wave.text)
                 .bodyStyle()
-                .foregroundColor(.mist)
+                .foregroundColor(.void)
                 .lineLimit(3)
 
             HStack {

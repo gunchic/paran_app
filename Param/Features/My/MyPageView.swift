@@ -6,7 +6,7 @@ struct MyPageView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.void.ignoresSafeArea()
+                Color.paper.ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: Spacing.lg) {
@@ -16,7 +16,7 @@ struct MyPageView: View {
 
                             Text(appState.currentUser?.nickname ?? "닉네임 없음")
                                 .heading2Style()
-                                .foregroundColor(.mist)
+                                .foregroundColor(.void)
 
                             Text(appState.currentUser?.email ?? "")
                                 .captionStyle()
@@ -24,7 +24,7 @@ struct MyPageView: View {
                         }
                         .padding(.top, Spacing.md)
 
-                        Divider().background(Color.surface)
+                        Divider().background(Color.stone)
 
                         // 메뉴
                         VStack(spacing: Spacing.xs) {
@@ -57,7 +57,7 @@ struct MyPageView: View {
 
             Text(title)
                 .bodyStyle()
-                .foregroundColor(.mist)
+                .foregroundColor(.void)
 
             Spacer()
 
@@ -66,7 +66,7 @@ struct MyPageView: View {
                 .captionStyle()
         }
         .padding(Spacing.md)
-        .background(Color.depth)
+        .background(Color.surfaceLowest)
         .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
     }
 }

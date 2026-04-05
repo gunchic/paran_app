@@ -8,7 +8,7 @@ struct ParamApp: App {
         WindowGroup {
             AppRouter()
                 .environmentObject(appState)
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(.light)
         }
     }
 }

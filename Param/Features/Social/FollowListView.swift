@@ -12,7 +12,7 @@ struct FollowListView: View {
 
     var body: some View {
         ZStack {
-            Color.void.ignoresSafeArea()
+            Color.paper.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Picker("", selection: $selectedTab) {
@@ -46,7 +46,7 @@ struct FollowListView: View {
 
             Text(user.nickname ?? "익명")
                 .bodyStyle()
-                .foregroundColor(.mist)
+                .foregroundColor(.void)
 
             Spacer()
         }

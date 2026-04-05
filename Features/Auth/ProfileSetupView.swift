@@ -8,12 +8,12 @@ struct ProfileSetupView: View {
 
     var body: some View {
         ZStack {
-            Color.void.ignoresSafeArea()
+            Color.paper.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: Spacing.lg) {
                 Text("프로필 설정")
                     .heading1Style()
-                    .foregroundColor(.mist)
+                    .foregroundColor(.void)
 
                 Text("닉네임을 입력해주세요")
                     .bodyStyle()
@@ -21,7 +21,7 @@ struct ProfileSetupView: View {
 
                 TextField("닉네임", text: $nickname)
                     .focused($isNicknameFocused)
-                    .foregroundColor(.mist)
+                    .foregroundColor(.void)
                     .paramInput(isFocused: isNicknameFocused)
 
                 Spacer()

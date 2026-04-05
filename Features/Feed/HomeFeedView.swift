@@ -7,7 +7,7 @@ struct HomeFeedView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.void.ignoresSafeArea()
+                Color.paper.ignoresSafeArea()
 
                 ScrollView {
                     LazyVStack(spacing: Spacing.sm) {

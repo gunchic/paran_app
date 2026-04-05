@@ -5,7 +5,7 @@ struct MyCrewListView: View {
 
     var body: some View {
         ZStack {
-            Color.void.ignoresSafeArea()
+            Color.paper.ignoresSafeArea()
 
             ScrollView {
                 LazyVStack(spacing: Spacing.sm) {
@@ -17,7 +17,7 @@ struct MyCrewListView: View {
                                 VStack(alignment: .leading, spacing: Spacing.xs) {
                                     Text(crew.crewName)
                                         .bodyStyle()
-                                        .foregroundColor(.mist)
+                                        .foregroundColor(.void)
 
                                     Text("\(crew.memberCount)명")
                                         .captionStyle()

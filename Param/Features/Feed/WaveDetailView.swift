@@ -5,13 +5,13 @@ struct WaveDetailView: View {
 
     var body: some View {
         ZStack {
-            Color.void.ignoresSafeArea()
+            Color.paper.ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     Text(wave.text)
                         .bodyStyle()
-                        .foregroundColor(.mist)
+                        .foregroundColor(.void)
 
                     if let imageUrl = wave.imageUrl {
                         AsyncImage(url: URL(string: imageUrl)) { image in

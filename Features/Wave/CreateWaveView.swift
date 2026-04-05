@@ -8,12 +8,12 @@ struct CreateWaveView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.void.ignoresSafeArea()
+                Color.paper.ignoresSafeArea()
 
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     TextEditor(text: $text)
                         .focused($isTextFocused)
-                        .foregroundColor(.mist)
+                        .foregroundColor(.void)
                         .scrollContentBackground(.hidden)
                         .background(Color.surfaceHighest)
                         .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))

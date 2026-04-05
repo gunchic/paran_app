@@ -5,7 +5,7 @@ struct CrewProfileView: View {
 
     var body: some View {
         ZStack {
-            Color.void.ignoresSafeArea()
+            Color.paper.ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
@@ -13,7 +13,7 @@ struct CrewProfileView: View {
                     VStack(alignment: .leading, spacing: Spacing.sm) {
                         Text(crew.crewName)
                             .heading1Style()
-                            .foregroundColor(.mist)
+                            .foregroundColor(.void)
 
                         HStack(spacing: Spacing.sm) {
                             Text(crew.crewType == "keyword" ? "키워드" : "감정")
@@ -37,7 +37,7 @@ struct CrewProfileView: View {
                     }
                     .padding(Spacing.md)
 
-                    Divider().background(Color.surface)
+                    Divider().background(Color.stone)
 
                     // 피드
                     CrewFeedView(crew: crew)

@@ -7,7 +7,7 @@ struct CrewFeedView: View {
 
     var body: some View {
         ZStack {
-            Color.void.ignoresSafeArea()
+            Color.paper.ignoresSafeArea()
 
             ScrollView {
                 LazyVStack(spacing: Spacing.sm) {

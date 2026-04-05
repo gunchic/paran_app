@@ -8,7 +8,7 @@ struct UserProfileView: View {
 
     var body: some View {
         ZStack {
-            Color.void.ignoresSafeArea()
+            Color.paper.ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: Spacing.lg) {
@@ -18,7 +18,7 @@ struct UserProfileView: View {
 
                         Text(user.nickname ?? "익명")
                             .heading2Style()
-                            .foregroundColor(.mist)
+                            .foregroundColor(.void)
 
                         if isFollowing {
                             Button("팔로잉") {
@@ -36,7 +36,7 @@ struct UserProfileView: View {
                     }
                     .padding(.top, Spacing.md)
 
-                    Divider().background(Color.surface)
+                    Divider().background(Color.stone)
 
                     // 파람 목록
                     LazyVStack(spacing: Spacing.sm) {

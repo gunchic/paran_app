@@ -11,7 +11,7 @@ struct CrewCreateView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.void.ignoresSafeArea()
+                Color.paper.ignoresSafeArea()
 
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -21,7 +21,7 @@ struct CrewCreateView: View {
 
                         TextField("선점할 단어 또는 문장", text: $crewName)
                             .focused($isNameFocused)
-                            .foregroundColor(.mist)
+                            .foregroundColor(.void)
                             .paramInput(isFocused: isNameFocused)
                     }
 
@@ -43,7 +43,7 @@ struct CrewCreateView: View {
                             .foregroundColor(.ash)
 
                         TextEditor(text: $description)
-                            .foregroundColor(.mist)
+                            .foregroundColor(.void)
                             .scrollContentBackground(.hidden)
                             .background(Color.surfaceHighest)
                             .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))

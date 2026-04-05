@@ -2,38 +2,57 @@ import SwiftUI
 
 // MARK: - Color Token Extensions
 extension Color {
-    // MARK: Primary Darks
-    /// Primary background (dark mode main)
-    static let void    = Color(hex: "#0E0E0E")
-    /// Card background (dark)
-    static let depth   = Color(hex: "#1C1C1C")
-    /// Elevated surface
-    static let surface = Color(hex: "#2A2A2A")
-    /// Primary text on dark
-    static let mist    = Color(hex: "#F0EFEB")
-
-    // MARK: Wave Blue (Brand Accent)
+    // MARK: Brand Palette
+    /// Primary brand color / CTA
     static let wave100 = Color(hex: "#B8DDE8")  // Tint
-    static let wave400 = Color(hex: "#7EB8C9")  // 메인 액센트 / CTA
+    static let wave400 = Color(hex: "#7EB8C9")  // 메인 액센트
     static let wave600 = Color(hex: "#3D8EA3")  // Press / Active
-    static let wave800 = Color(hex: "#1E5F73")  // Deep accent
+    static let wave800 = Color(hex: "#1E5F73")  // Deep / Primary Button
 
-    // MARK: Neutrals
-    static let paper = Color(hex: "#F5F4F2")  // Light mode bg
-    static let stone = Color(hex: "#E8E7E4")  // Border on light
-    static let ash   = Color(hex: "#9A9994")  // Secondary text
-    static let slate = Color(hex: "#5C5B58")  // Tertiary text
+    /// Secondary brand color
+    static let colorSecondary = Color(hex: "#657B81")
 
-    // MARK: Surface Hierarchy
+    /// Tertiary brand color (purple accent)
+    static let colorTertiary = Color(hex: "#C0A5D6")
+
+    // MARK: Neutral Scale (Light Mode)
+    /// 앱 메인 배경 (Light mode)
+    static let paper  = Color(hex: "#F5F4F2")
+    /// 카드 배경 (Light mode)
+    static let stone  = Color(hex: "#E8E7E4")
+    /// 보조 텍스트
+    static let ash    = Color(hex: "#9A9994")
+    /// 3차 텍스트
+    static let slate  = Color(hex: "#5C5B58")
+
+    // MARK: Surface Hierarchy (Light Mode)
+    static let surfaceLowest    = Color(hex: "#FFFFFF")
     static let surfaceBase      = Color(hex: "#FAF9F7")
     static let surfaceLow       = Color(hex: "#F4F3F1")
     static let surfaceContainer = Color(hex: "#EFEEEC")
-    static let surfaceLowest    = Color(hex: "#FFFFFF")
     static let surfaceHighest   = Color(hex: "#E3E2E0")
+
+    // MARK: Dark Tokens (Inverted 버튼 등 부분 사용)
+    /// 완전한 어두운 배경 / Inverted 버튼 bg / 기본 텍스트 컬러
+    static let void    = Color(hex: "#0E0E0E")
+    /// 다크 카드 배경
+    static let depth   = Color(hex: "#1C1C1C")
+    /// 다크 elevated surface
+    static let surface = Color(hex: "#2A2A2A")
+    /// 다크 모드 주요 텍스트
+    static let mist    = Color(hex: "#F0EFEB")
 
     // MARK: Semantic
     /// 파람 브랜드 포인트
     static let waveAccent = Color.wave400
+    /// 앱 기본 배경
+    static let appBackground = Color.paper
+    /// 카드 배경
+    static let cardBackground = Color.surfaceLowest
+    /// 기본 텍스트
+    static let primaryText = Color.void
+    /// 보조 텍스트
+    static let secondaryText = Color.ash
 }
 
 // MARK: - Hex Color Initializer

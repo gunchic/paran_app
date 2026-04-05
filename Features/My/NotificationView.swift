@@ -3,7 +3,7 @@ import SwiftUI
 struct NotificationView: View {
     var body: some View {
         ZStack {
-            Color.void.ignoresSafeArea()
+            Color.paper.ignoresSafeArea()
 
             VStack {
                 Spacer()

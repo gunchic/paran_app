@@ -5,14 +5,14 @@ struct LoginView: View {
 
     var body: some View {
         ZStack {
-            Color.void.ignoresSafeArea()
+            Color.paper.ignoresSafeArea()
 
             VStack(spacing: Spacing.lg) {
                 Spacer()
 
                 Text("PARAM")
                     .displayStyle()
-                    .foregroundColor(.mist)
+                    .foregroundColor(.void)
 
                 Spacer()
 
