@@ -4,9 +4,8 @@ import Supabase
 // MARK: - App Configuration
 private enum AppConfig {
     enum Supabase {
-        // TODO: 실제 프로젝트 URL과 anon key로 교체
-        static let url     = "https://YOUR_PROJECT_ID.supabase.co"
-        static let anonKey = "YOUR_ANON_KEY"
+        static let url     = "https://ptnltusonbczrquzurti.supabase.co"
+        static let anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0bmx0dXNvbmJjenJxdXp1cnRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MDExNzQsImV4cCI6MjA5MDA3NzE3NH0.rOfc4rAfcMGu4udTo2ELfCTEDKjB_oTIhfnlEBN1PXk"
     }
 }
 

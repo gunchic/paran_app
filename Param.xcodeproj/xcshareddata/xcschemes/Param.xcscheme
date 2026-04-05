@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A7FE6E18102E4DB6A58C1BE3"
+               BlueprintIdentifier = "A571CC081F334E4DAA611FEE"
                BuildableName = "Param.app"
                BlueprintName = "Param"
                ReferencedContainer = "container:Param.xcodeproj">
@@ -43,7 +43,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A7FE6E18102E4DB6A58C1BE3"
+            BlueprintIdentifier = "A571CC081F334E4DAA611FEE"
             BuildableName = "Param.app"
             BlueprintName = "Param"
             ReferencedContainer = "container:Param.xcodeproj">

@@ -9,6 +9,7 @@ struct ProfileSetupView: View {
     @State private var nickStatus: NickStatus = .empty
     @State private var avatars: [Avatar] = []
     @State private var selectedAvatar: Avatar? = nil
+    @State private var isLoadingAvatars: Bool = true
     @State private var isSubmitting: Bool = false
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
@@ -16,6 +17,29 @@ struct ProfileSetupView: View {
 
     // debounce용
     @State private var nickCheckTask: Task<Void, Never>? = nil
+
+    // 폴백 아바타 (avatars 테이블 없을 때)
+    private static let fallbackAvatars: [Avatar] = [
+        Avatar(id: UUID(uuidString: "00000001-0000-0000-0000-000000000001")!, name: "파랑이", imageUrl: "", sortOrder: 0, isActive: true),
+        Avatar(id: UUID(uuidString: "00000001-0000-0000-0000-000000000002")!, name: "초록이", imageUrl: "", sortOrder: 1, isActive: true),
+        Avatar(id: UUID(uuidString: "00000001-0000-0000-0000-000000000003")!, name: "노랑이", imageUrl: "", sortOrder: 2, isActive: true),
+        Avatar(id: UUID(uuidString: "00000001-0000-0000-0000-000000000004")!, name: "빨강이", imageUrl: "", sortOrder: 3, isActive: true),
+        Avatar(id: UUID(uuidString: "00000001-0000-0000-0000-000000000005")!, name: "보라이", imageUrl: "", sortOrder: 4, isActive: true),
+        Avatar(id: UUID(uuidString: "00000001-0000-0000-0000-000000000006")!, name: "주황이", imageUrl: "", sortOrder: 5, isActive: true),
+        Avatar(id: UUID(uuidString: "00000001-0000-0000-0000-000000000007")!, name: "하늘이", imageUrl: "", sortOrder: 6, isActive: true),
+        Avatar(id: UUID(uuidString: "00000001-0000-0000-0000-000000000008")!, name: "분홍이", imageUrl: "", sortOrder: 7, isActive: true),
+    ]
+
+    private static let fallbackColors: [Color] = [
+        Color(red: 0.49, green: 0.72, blue: 0.79),
+        Color(red: 0.47, green: 0.72, blue: 0.54),
+        Color(red: 0.95, green: 0.80, blue: 0.40),
+        Color(red: 0.90, green: 0.45, blue: 0.45),
+        Color(red: 0.75, green: 0.63, blue: 0.84),
+        Color(red: 0.95, green: 0.64, blue: 0.38),
+        Color(red: 0.53, green: 0.81, blue: 0.92),
+        Color(red: 0.96, green: 0.71, blue: 0.80),
+    ]
 
     private var isFormValid: Bool {
         nickStatus == .available && selectedAvatar != nil
@@ -145,7 +169,7 @@ struct ProfileSetupView: View {
                 .font(.paramBody.weight(.semibold))
                 .foregroundColor(.void)
 
-            if avatars.isEmpty {
+            if isLoadingAvatars {
                 HStack {
                     Spacer()
                     ProgressView().tint(.wave400)
@@ -167,11 +191,18 @@ struct ProfileSetupView: View {
 
     private func avatarCell(_ avatar: Avatar) -> some View {
         let isSelected = selectedAvatar?.id == avatar.id
+        let colorIndex = avatar.sortOrder % Self.fallbackColors.count
         return VStack(spacing: Spacing.xs) {
-            AsyncImage(url: URL(string: avatar.imageUrl)) { image in
-                image.resizable().scaledToFill()
-            } placeholder: {
-                Circle().fill(Color.surfaceContainer)
+            Group {
+                if let url = URL(string: avatar.imageUrl), !avatar.imageUrl.isEmpty {
+                    AsyncImage(url: url) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        Circle().fill(Self.fallbackColors[colorIndex])
+                    }
+                } else {
+                    Circle().fill(Self.fallbackColors[colorIndex])
+                }
             }
             .frame(width: 64, height: 64)
             .clipShape(Circle())
@@ -232,10 +263,11 @@ struct ProfileSetupView: View {
                     .order("sort_order")
                     .execute()
                     .value
-                avatars = result
+                avatars = result.isEmpty ? Self.fallbackAvatars : result
             } catch {
-                // 아바타 로드 실패 시 빈 상태 유지
+                avatars = Self.fallbackAvatars
             }
+            isLoadingAvatars = false
         }
     }
 
@@ -243,12 +275,15 @@ struct ProfileSetupView: View {
     private func handleSubmit() {
         guard let avatar = selectedAvatar, isFormValid else { return }
         isSubmitting = true
+        // 폴백 아바타(DB에 없는 UUID)면 nil로 전달해 FK 위반 방지
+        let isFallback = Self.fallbackAvatars.contains { $0.id == avatar.id }
+        let avatarId: UUID? = isFallback ? nil : avatar.id
         Task {
             defer { isSubmitting = false }
             do {
                 try await authManager.updateProfile(
                     nickname: nickname.trimmingCharacters(in: .whitespacesAndNewlines),
-                    avatarId: avatar.id
+                    avatarId: avatarId
                 )
             } catch {
                 errorMessage = error.localizedDescription

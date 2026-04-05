@@ -91,7 +91,8 @@ final class AuthManager: ObservableObject {
     }
 
     // MARK: - 프로필 업데이트 (A-03 완료 시 호출)
-    func updateProfile(nickname: String, avatarId: UUID) async throws {
+    // avatarId: nil이면 DB FK 위반 없이 null로 저장
+    func updateProfile(nickname: String, avatarId: UUID?) async throws {
         guard let userId = currentUser?.id else { return }
         let update = UserProfileUpdate(nickname: nickname, avatarId: avatarId)
         let updated: [User] = try await supabase

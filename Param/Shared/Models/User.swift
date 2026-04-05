@@ -26,6 +26,6 @@ struct UserInsert: Encodable {
 // UPDATE 시 사용
 struct UserProfileUpdate: Encodable {
     let nickname: String
-    let avatarId: UUID
+    let avatarId: UUID?
     let isProfileSet: Bool = true
 }
