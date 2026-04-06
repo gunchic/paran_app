@@ -208,6 +208,7 @@ final class WaveDetailViewModel: ObservableObject {
         !commentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImage != nil
     }
 
+    private let waveService = WaveService.shared
     private let commentService = CommentService.shared
 
     init(item: WaveFeedItem) {
