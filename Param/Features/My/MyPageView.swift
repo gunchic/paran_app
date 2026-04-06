@@ -3,6 +3,10 @@ import SwiftUI
 struct MyPageView: View {
     @EnvironmentObject private var appState: AppState
 
+    @State private var cacheSize: String = ""
+    @State private var showClearAlert = false
+    @State private var showClearedAlert = false
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -39,12 +43,63 @@ struct MyPageView: View {
                             }
                         }
                         .padding(.horizontal, Spacing.md)
+
+                        // 캐시 관리
+                        VStack(spacing: Spacing.xs) {
+                            Button {
+                                showClearAlert = true
+                            } label: {
+                                HStack(spacing: Spacing.md) {
+                                    Image(systemName: "trash")
+                                        .foregroundColor(.wave400)
+                                        .frame(width: 24)
+
+                                    Text("캐시 삭제")
+                                        .bodyStyle()
+                                        .foregroundColor(.void)
+
+                                    Spacer()
+
+                                    Text(cacheSize)
+                                        .captionStyle()
+                                        .foregroundColor(.ash)
+                                }
+                                .padding(Spacing.md)
+                                .background(Color.surfaceLowest)
+                                .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, Spacing.md)
                     }
                 }
             }
             .navigationTitle("나")
             .navigationBarTitleDisplayMode(.inline)
+            .task { await loadCacheSize() }
+            .alert("캐시를 삭제할까요?", isPresented: $showClearAlert) {
+                Button("취소", role: .cancel) {}
+                Button("삭제", role: .destructive) {
+                    Task {
+                        await ImageCache.shared.clearAll()
+                        await loadCacheSize()
+                        showClearedAlert = true
+                    }
+                }
+            } message: {
+                Text("저장된 이미지 캐시 \(cacheSize)가 삭제돼요")
+            }
+            .alert("완료", isPresented: $showClearedAlert) {
+                Button("확인", role: .cancel) {}
+            } message: {
+                Text("캐시가 삭제됐어요")
+            }
         }
+    }
+
+    private func loadCacheSize() async {
+        let bytes = await ImageCache.shared.diskCacheSize()
+        cacheSize = ImageCompressor.formatBytes(bytes)
     }
 
     private func menuRow(icon: String, title: String) -> some View {

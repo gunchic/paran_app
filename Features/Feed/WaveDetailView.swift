@@ -77,41 +77,19 @@ struct WaveDetailView: View {
     // MARK: - 댓글 행
     private func commentRow(_ comment: Comment) -> some View {
         HStack(alignment: .top, spacing: Spacing.sm) {
-            // 아바타
-            AsyncImage(url: URL(string: comment.userAvatarUrl ?? "")) { phase in
-                if case .success(let img) = phase {
-                    img.resizable().scaledToFill()
-                } else {
-                    Circle().fill(Color.surfaceContainer)
-                }
-            }
-            .frame(width: 32, height: 32)
-            .clipShape(Circle())
+            ParamImageView.avatar(url: comment.userAvatarUrl, size: 32)
 
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                // 닉네임
                 Text(comment.userNickname ?? "알 수 없음")
                     .captionStyle()
                     .foregroundColor(.ash)
 
-                // 본문
                 Text(comment.body)
                     .bodyStyle()
                     .foregroundColor(.void)
 
-                // 이미지
                 if let imgUrl = comment.imageUrl {
-                    AsyncImage(url: URL(string: imgUrl)) { phase in
-                        if case .success(let img) = phase {
-                            img.resizable().scaledToFill()
-                        } else {
-                            Color.surfaceContainer
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 200)
-                    .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: Radius.sm, style: .continuous))
+                    ParamImageView.comment(url: imgUrl)
                 }
 
                 // 시간 + 나도그래
@@ -230,7 +208,6 @@ final class WaveDetailViewModel: ObservableObject {
         !commentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImage != nil
     }
 
-    private let waveService = WaveService.shared
     private let commentService = CommentService.shared
 
     init(item: WaveFeedItem) {
@@ -306,8 +283,11 @@ final class WaveDetailViewModel: ObservableObject {
         do {
             var imageUrl: String? = nil
             if let image = selectedImage {
-                let urls = try await waveService.uploadImage(image, userId: userId)
-                imageUrl = urls.thumbnailUrl
+                let commentId = UUID()
+                imageUrl = try await ImageUploadService.shared.uploadCommentImage(
+                    originalImage: image,
+                    commentId: commentId
+                )
             }
             let comment = try await commentService.createComment(
                 momentId: item.id,

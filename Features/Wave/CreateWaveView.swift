@@ -66,45 +66,82 @@ struct CreateWaveView: View {
     }
 
     // MARK: - 이미지 영역
+    private let previewHeight: CGFloat = 240
+
     private var imageSection: some View {
-        PhotosPicker(selection: $viewModel.selectedItem, matching: .images) {
+        Group {
             if let image = viewModel.selectedImage {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 200)
-                    .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
-                    .overlay(alignment: .topTrailing) {
-                        Button {
-                            viewModel.selectedImage = nil
-                            viewModel.selectedItem = nil
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 22))
-                                .foregroundColor(.white)
-                                .shadow(radius: 2)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(Spacing.sm)
-                    }
+                // 이미지 선택 상태: 드래그로 포커싱 조정
+                selectedImagePreview(image: image)
             } else {
-                VStack(spacing: Spacing.sm) {
-                    Image(systemName: "camera")
-                        .font(.system(size: 28, weight: .light))
-                        .foregroundColor(.ash)
-                    Text("사진 추가")
-                        .captionStyle()
-                        .foregroundColor(.ash)
+                // 미선택 상태: PhotosPicker 트리거
+                PhotosPicker(selection: $viewModel.selectedItem, matching: .images) {
+                    VStack(spacing: Spacing.sm) {
+                        Image(systemName: "camera")
+                            .font(.system(size: 28, weight: .light))
+                            .foregroundColor(.ash)
+                        Text("사진 추가")
+                            .captionStyle()
+                            .foregroundColor(.ash)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 140)
+                    .background(Color.surfaceContainer)
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 140)
-                .background(Color.surfaceContainer)
-                .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
+                .buttonStyle(.plain)
             }
         }
-        .buttonStyle(.plain)
+    }
+
+    private func selectedImagePreview(image: UIImage) -> some View {
+        let offsetY = CGFloat(0.5 - viewModel.imageOffsetY) * 80
+        return ZStack(alignment: .bottom) {
+            // 이미지 + 오프셋 프리뷰
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity)
+                .frame(height: previewHeight + 80)
+                .offset(y: offsetY)
+                .frame(height: previewHeight)
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
+
+            // 드래그 힌트
+            Text("위아래로 드래그해서 위치 조정")
+                .captionStyle()
+                .foregroundColor(.white)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xs)
+                .background(Color.black.opacity(0.4))
+                .clipShape(Capsule())
+                .padding(.bottom, Spacing.sm)
+        }
+        .overlay(alignment: .topTrailing) {
+            Button {
+                viewModel.selectedImage = nil
+                viewModel.selectedItem = nil
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundColor(.white)
+                    .shadow(radius: 2)
+            }
+            .buttonStyle(.plain)
+            .padding(Spacing.sm)
+        }
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    let delta = value.translation.height / previewHeight
+                    let newOffset = viewModel.dragBaseOffset + delta
+                    viewModel.imageOffsetY = min(1.0, max(0.0, newOffset))
+                }
+                .onEnded { _ in
+                    viewModel.dragBaseOffset = viewModel.imageOffsetY
+                }
+        )
     }
 
     // MARK: - 해시태그 섹션

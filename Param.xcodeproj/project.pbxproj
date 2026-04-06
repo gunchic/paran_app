@@ -61,6 +61,10 @@
 		EE11FF22AA33BB44CC55DD77 /* Hashtag.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11FF22AA33BB44CC55DD76 /* Hashtag.swift */; };
 		EE11FF22AA33BB44CC55DD79 /* HashtagFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11FF22AA33BB44CC55DD78 /* HashtagFeedView.swift */; };
 		EE11FF22AA33BB44CC55DD7B /* CommentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11FF22AA33BB44CC55DD7A /* CommentService.swift */; };
+		FF11AA22BB33CC44DD55EE81 /* ImageCompressor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF11AA22BB33CC44DD55EE80 /* ImageCompressor.swift */; };
+		FF11AA22BB33CC44DD55EE83 /* ImageUploadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF11AA22BB33CC44DD55EE82 /* ImageUploadService.swift */; };
+		FF11AA22BB33CC44DD55EE85 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF11AA22BB33CC44DD55EE84 /* ImageCache.swift */; };
+		FF11AA22BB33CC44DD55EE87 /* ParamImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF11AA22BB33CC44DD55EE86 /* ParamImageView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -118,6 +122,10 @@
 		EE11FF22AA33BB44CC55DD76 /* Hashtag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hashtag.swift; sourceTree = "<group>"; };
 		EE11FF22AA33BB44CC55DD78 /* HashtagFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HashtagFeedView.swift; sourceTree = "<group>"; };
 		EE11FF22AA33BB44CC55DD7A /* CommentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentService.swift; sourceTree = "<group>"; };
+		FF11AA22BB33CC44DD55EE80 /* ImageCompressor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCompressor.swift; sourceTree = "<group>"; };
+		FF11AA22BB33CC44DD55EE82 /* ImageUploadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUploadService.swift; sourceTree = "<group>"; };
+		FF11AA22BB33CC44DD55EE84 /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
+		FF11AA22BB33CC44DD55EE86 /* ParamImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParamImageView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -188,11 +196,22 @@
 			children = (
 				CC33DD44EE55FF66AA11BB22 /* DesignSystem */,
 				DD44EE55FF66AA11BB22CC33 /* Extensions */,
+				FF11AA22BB33CC44DD55EE88 /* Image */,
 				EE55FF66AA11BB22CC33DD44 /* Network */,
 				DD11EE22FF33AA44BB55CC73 /* Services */,
 				DD11EE22FF33AA44BB55CC67 /* ParamError.swift */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		FF11AA22BB33CC44DD55EE88 /* Image */ = {
+			isa = PBXGroup;
+			children = (
+				FF11AA22BB33CC44DD55EE84 /* ImageCache.swift */,
+				FF11AA22BB33CC44DD55EE80 /* ImageCompressor.swift */,
+				FF11AA22BB33CC44DD55EE82 /* ImageUploadService.swift */,
+			);
+			path = Image;
 			sourceTree = "<group>";
 		};
 		BB22CC33DD44EE55FF66AA88 /* Crew */ = {
@@ -216,6 +235,7 @@
 				25D02F304152D02F30415252 /* CrewBadgeView.swift */,
 				DD11EE22FF33AA44BB55CC6B /* ParamEmptyView.swift */,
 				DD11EE22FF33AA44BB55CC6D /* ParamErrorView.swift */,
+				FF11AA22BB33CC44DD55EE86 /* ParamImageView.swift */,
 				DD11EE22FF33AA44BB55CC69 /* ParamLoadingView.swift */,
 				36E13041526336E130415263 /* WaveButton.swift */,
 			);
@@ -455,6 +475,10 @@
 				EE11FF22AA33BB44CC55DD77 /* Hashtag.swift in Sources */,
 				EE11FF22AA33BB44CC55DD79 /* HashtagFeedView.swift in Sources */,
 				EE11FF22AA33BB44CC55DD7B /* CommentService.swift in Sources */,
+				FF11AA22BB33CC44DD55EE81 /* ImageCompressor.swift in Sources */,
+				FF11AA22BB33CC44DD55EE83 /* ImageUploadService.swift in Sources */,
+				FF11AA22BB33CC44DD55EE85 /* ImageCache.swift in Sources */,
+				FF11AA22BB33CC44DD55EE87 /* ParamImageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

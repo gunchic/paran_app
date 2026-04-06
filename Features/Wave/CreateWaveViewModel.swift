@@ -12,7 +12,11 @@ final class CreateWaveViewModel: ObservableObject {
 
     // 해시태그
     @Published var hashtagInput: String = ""
-    @Published var hashtags: [String] = []  // 확정된 태그 목록
+    @Published var hashtags: [String] = []
+
+    // 이미지 포커싱 (0.0=상단 ~ 0.5=중앙 ~ 1.0=하단)
+    @Published var imageOffsetY: Double = 0.5
+    var dragBaseOffset: Double = 0.5
 
     var canSubmit: Bool {
         !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isUploading
@@ -21,7 +25,8 @@ final class CreateWaveViewModel: ObservableObject {
     private let service = WaveService.shared
     private let maxHashtags = 5
 
-    // 스페이스/엔터 입력 시 태그 확정
+    // MARK: - 해시태그
+
     func processHashtagInput() {
         let raw = hashtagInput
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -33,7 +38,6 @@ final class CreateWaveViewModel: ObservableObject {
             return
         }
 
-        // 최대 5개 제한
         if hashtags.count < maxHashtags && !hashtags.contains(raw) {
             hashtags.append(raw)
         }
@@ -44,23 +48,30 @@ final class CreateWaveViewModel: ObservableObject {
         hashtags.removeAll { $0 == tag }
     }
 
+    // MARK: - 이미지 선택
+
     func loadImage(_ item: PhotosPickerItem?) async {
         guard let item else { return }
         do {
             if let data = try await item.loadTransferable(type: Data.self),
                let image = UIImage(data: data) {
                 selectedImage = image
+                // 새 이미지 선택 시 포커싱 초기화
+                imageOffsetY = 0.5
+                dragBaseOffset = 0.5
             }
         } catch {
             errorMessage = "이미지를 불러올 수 없어요"
         }
     }
 
+    // MARK: - 파동 올리기
+
     func submit(userId: UUID) async {
         let trimmed = body.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
-        // 입력 중인 태그가 있으면 확정
+        // 입력 중인 태그 확정
         if !hashtagInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             processHashtagInput()
         }
@@ -74,7 +85,11 @@ final class CreateWaveViewModel: ObservableObject {
             var thumbnailUrl: String? = nil
 
             if let image = selectedImage {
-                let urls = try await service.uploadImage(image, userId: userId)
+                let uploadId = UUID()
+                let urls = try await ImageUploadService.shared.uploadWaveImage(
+                    originalImage: image,
+                    waveId: uploadId
+                )
                 imageUrl = urls.imageUrl
                 thumbnailUrl = urls.thumbnailUrl
             }
@@ -83,10 +98,10 @@ final class CreateWaveViewModel: ObservableObject {
                 userId: userId,
                 body: trimmed,
                 imageUrl: imageUrl,
-                thumbnailUrl: thumbnailUrl
+                thumbnailUrl: thumbnailUrl,
+                imageOffsetY: selectedImage != nil ? imageOffsetY : nil
             )
 
-            // 해시태그 INSERT (실패해도 파동은 등록된 것으로 처리)
             if !hashtags.isEmpty {
                 try? await service.insertHashtags(hashtags, momentId: momentId)
             }

@@ -9,6 +9,9 @@ struct ParamApp: App {
             AppRouter()
                 .environmentObject(authManager)
                 .preferredColorScheme(.light)
+                .onAppear {
+                    Task { await ImageCache.shared.clearExpired() }
+                }
         }
     }
 }

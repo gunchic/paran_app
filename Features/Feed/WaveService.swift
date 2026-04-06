@@ -1,5 +1,4 @@
 import Foundation
-import UIKit
 
 /// 파동(moment) + 나도그래(wave resonance) 서비스
 final class WaveService {
@@ -36,13 +35,15 @@ final class WaveService {
         let imageUrl: String?
         let thumbnailUrl: String?
         let contentType: String
+        let imageOffsetY: Double?
     }
 
     func createMoment(
         userId: UUID,
         body: String,
         imageUrl: String? = nil,
-        thumbnailUrl: String? = nil
+        thumbnailUrl: String? = nil,
+        imageOffsetY: Double? = nil
     ) async throws -> UUID {
         let contentType = imageUrl != nil ? "image" : "text"
         let payload = MomentCreate(
@@ -50,7 +51,8 @@ final class WaveService {
             body: body,
             imageUrl: imageUrl,
             thumbnailUrl: thumbnailUrl,
-            contentType: contentType
+            contentType: contentType,
+            imageOffsetY: imageOffsetY
         )
         struct CreatedMoment: Decodable { let id: UUID }
         let result: [CreatedMoment] = try await supabase
@@ -73,28 +75,6 @@ final class WaveService {
             .from("wave_hashtags")
             .insert(rows)
             .execute()
-    }
-
-    // MARK: - 이미지 업로드 (Supabase Storage)
-
-    func uploadImage(_ image: UIImage, userId: UUID) async throws -> (imageUrl: String, thumbnailUrl: String) {
-        guard let compressed = image.jpegData(compressionQuality: 0.8),
-              let thumbnail = image.resized(to: CGSize(width: 200, height: 200))?.jpegData(compressionQuality: 0.7)
-        else { throw ParamError.uploadFailed }
-
-        let fileName = "\(userId.uuidString)/\(UUID().uuidString).jpg"
-        let thumbName = "\(userId.uuidString)/thumb_\(UUID().uuidString).jpg"
-
-        try await supabase.storage
-            .from("moments")
-            .upload(fileName, data: compressed, options: .init(contentType: "image/jpeg", upsert: false))
-
-        try await supabase.storage
-            .from("moments")
-            .upload(thumbName, data: thumbnail, options: .init(contentType: "image/jpeg", upsert: false))
-
-        let baseUrl = "https://ptnltusonbczrquzurti.supabase.co/storage/v1/object/public/moments/"
-        return (imageUrl: baseUrl + fileName, thumbnailUrl: baseUrl + thumbName)
     }
 
     // MARK: - 나도그래 토글 (waves INSERT/DELETE)
@@ -144,12 +124,3 @@ final class WaveService {
     }
 }
 
-// MARK: - UIImage 리사이즈 헬퍼
-private extension UIImage {
-    func resized(to size: CGSize) -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(size, false, 0)
-        defer { UIGraphicsEndImageContext() }
-        draw(in: CGRect(origin: .zero, size: size))
-        return UIGraphicsGetImageFromCurrentImageContext()
-    }
-}

@@ -71,24 +71,17 @@ struct WaveCardView: View {
         .onChange(of: item.waveCount) { newVal in resonateCount = newVal }
     }
 
-    // MARK: - 미디어
+    // MARK: - 미디어 (imageOffsetY: 0.0=상단 ~ 0.5=중앙 ~ 1.0=하단)
     private func mediaSection(url: String) -> some View {
-        ZStack(alignment: .center) {
-            AsyncImage(url: URL(string: url)) { phase in
-                switch phase {
-                case .success(let image):
-                    image.resizable().scaledToFill()
-                case .failure:
-                    Color.surfaceContainer
-                case .empty:
-                    Color.surfaceContainer.overlay(ProgressView().tint(.ash))
-                @unknown default:
-                    Color.surfaceContainer
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 220)
-            .clipped()
+        // (0.5 - offset) * 80 → 중앙 기준 ±40pt 이동
+        let offsetY = CGFloat(0.5 - (item.imageOffsetY ?? 0.5)) * 80
+        return ZStack(alignment: .center) {
+            ParamImageView(url: url, contentMode: .fill)
+                .frame(maxWidth: .infinity)
+                .frame(height: 360) // offset 여유분 포함
+                .offset(y: offsetY)
+                .frame(height: 280)
+                .clipped()
 
             if item.hasYouTube {
                 Image(systemName: "play.circle.fill")
@@ -102,15 +95,7 @@ struct WaveCardView: View {
     // MARK: - 작성자 행
     private var authorRow: some View {
         HStack(spacing: Spacing.sm) {
-            AsyncImage(url: URL(string: item.authorProfileImageUrl ?? "")) { phase in
-                if case .success(let image) = phase {
-                    image.resizable().scaledToFill()
-                } else {
-                    Circle().fill(Color.surfaceContainer)
-                }
-            }
-            .frame(width: 32, height: 32)
-            .clipShape(Circle())
+            ParamImageView.avatar(url: item.authorProfileImageUrl, size: 32)
 
             Text(item.authorNickname ?? "알 수 없음")
                 .captionStyle()
@@ -213,18 +198,8 @@ struct WaveCardView: View {
     // MARK: - 상위 댓글 1개
     private func topCommentRow(_ comment: Comment) -> some View {
         HStack(alignment: .top, spacing: Spacing.sm) {
-            // 아바타
-            AsyncImage(url: URL(string: comment.userAvatarUrl ?? "")) { phase in
-                if case .success(let img) = phase {
-                    img.resizable().scaledToFill()
-                } else {
-                    Circle().fill(Color.surfaceContainer)
-                }
-            }
-            .frame(width: 24, height: 24)
-            .clipShape(Circle())
+            ParamImageView.avatar(url: comment.userAvatarUrl, size: 24)
 
-            // 닉네임 + 내용
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: Spacing.xs) {
                     Text(comment.userNickname ?? "알 수 없음")
@@ -239,18 +214,11 @@ struct WaveCardView: View {
 
             Spacer()
 
-            // 댓글 이미지 썸네일
             if let imgUrl = comment.imageUrl {
-                AsyncImage(url: URL(string: imgUrl)) { phase in
-                    if case .success(let img) = phase {
-                        img.resizable().scaledToFill()
-                    } else {
-                        Color.surfaceContainer
-                    }
-                }
-                .frame(width: 40, height: 40)
-                .clipped()
-                .clipShape(RoundedRectangle(cornerRadius: Radius.xs, style: .continuous))
+                ParamImageView(url: imgUrl, contentMode: .fill)
+                    .frame(width: 40, height: 40)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.xs, style: .continuous))
             }
         }
         .padding(.top, Spacing.xs)

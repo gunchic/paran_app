@@ -194,18 +194,16 @@ struct ProfileSetupView: View {
         let colorIndex = avatar.sortOrder % Self.fallbackColors.count
         return VStack(spacing: Spacing.xs) {
             Group {
-                if let url = URL(string: avatar.imageUrl), !avatar.imageUrl.isEmpty {
-                    AsyncImage(url: url) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        Circle().fill(Self.fallbackColors[colorIndex])
-                    }
+                if !avatar.imageUrl.isEmpty {
+                    ParamImageView(url: avatar.imageUrl, contentMode: .fill)
+                        .frame(width: 64, height: 64)
+                        .clipShape(Circle())
                 } else {
-                    Circle().fill(Self.fallbackColors[colorIndex])
+                    Circle()
+                        .fill(Self.fallbackColors[colorIndex])
+                        .frame(width: 64, height: 64)
                 }
             }
-            .frame(width: 64, height: 64)
-            .clipShape(Circle())
             .overlay(
                 Circle()
                     .stroke(isSelected ? Color.wave400 : Color.clear, lineWidth: 2)
