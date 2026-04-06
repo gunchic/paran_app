@@ -3,20 +3,12 @@ import SwiftUI
 struct CrewFeedView: View {
     let crew: Crew
 
-    @State private var waves: [Wave] = []
-
     var body: some View {
         ZStack {
             Color.paper.ignoresSafeArea()
-
-            ScrollView {
-                LazyVStack(spacing: Spacing.sm) {
-                    ForEach(waves) { wave in
-                        WaveCardView(wave: wave)
-                    }
-                }
-                .padding(Spacing.md)
-            }
+            Text("크루 피드 — 추후 구현")
+                .bodyStyle()
+                .foregroundColor(.ash)
         }
         .navigationTitle(crew.crewName)
         .navigationBarTitleDisplayMode(.inline)

@@ -38,11 +38,9 @@ struct UserProfileView: View {
 
                     Divider().background(Color.stone)
 
-                    // 파람 목록
+                    // 파람 목록 — 추후 구현
                     LazyVStack(spacing: Spacing.sm) {
-                        ForEach(waves) { wave in
-                            WaveCardView(wave: wave)
-                        }
+                        EmptyView()
                     }
                     .padding(.horizontal, Spacing.md)
                 }
