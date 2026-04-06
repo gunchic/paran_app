@@ -8,6 +8,8 @@ final class AuthManager: ObservableObject {
     @Published var isLoggedIn: Bool = false
     @Published var currentUser: User? = nil
     @Published var isLoading: Bool = false
+    /// true → 아직 Supabase 세션 복원 중 (앱 시작 직후)
+    @Published var isInitializing: Bool = true
 
     private var supabase: SupabaseClient { SupabaseManager.shared.client }
 
@@ -38,6 +40,7 @@ final class AuthManager: ObservableObject {
                 } else {
                     isLoggedIn = false
                 }
+                isInitializing = false  // 세션 복원 완료
             case .signedIn:
                 if let session {
                     await fetchOrCreateUser(session: session)
@@ -112,7 +115,7 @@ final class AuthManager: ObservableObject {
             .from("users")
             .update(update)
             .eq("id", value: userId.uuidString)
-            .select()
+            .select("id, email, nickname, avatar_id, current_crew_id, is_profile_set, created_at")
             .execute()
             .value
         currentUser = updated.first
