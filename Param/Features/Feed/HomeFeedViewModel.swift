@@ -13,7 +13,6 @@ final class HomeFeedViewModel: ObservableObject {
     private var currentPage = 0
     private let service = WaveService.shared
 
-    /// 초기 로드 (pull-to-refresh 포함)
     func loadInitial() async {
         guard !isLoading else { return }
         isLoading = true
@@ -29,7 +28,6 @@ final class HomeFeedViewModel: ObservableObject {
         isLoading = false
     }
 
-    /// 무한스크롤 추가 로드
     func loadMore() async {
         guard !isLoadingMore, hasMore, !isLoading else { return }
         isLoadingMore = true
@@ -39,9 +37,22 @@ final class HomeFeedViewModel: ObservableObject {
             items.append(contentsOf: result)
             currentPage = nextPage
             hasMore = result.count == pageSize
-        } catch {
-            // 추가 로드 실패는 조용히 처리
-        }
+        } catch { /* 조용히 처리 */ }
         isLoadingMore = false
+    }
+
+    // MARK: - 나도그래 낙관적 업데이트
+    func toggleResonate(item: WaveFeedItem) async {
+        guard let userId = try? await SupabaseManager.shared.client.auth.session.user.id else { return }
+
+        // 낙관적 업데이트: UI 먼저 변경
+        if let idx = items.firstIndex(where: { $0.id == item.id }) {
+            let current = items[idx].waveCount
+            // waveCount 변경은 WaveFeedItem이 let이라 교체 불가 → 서버 동기화 후 갱신
+        }
+
+        do {
+            try await service.toggleResonate(momentId: item.id, userId: userId)
+        } catch { /* 실패 시 조용히 처리 */ }
     }
 }

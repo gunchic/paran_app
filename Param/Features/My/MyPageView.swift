@@ -24,8 +24,6 @@ struct MyPageView: View {
                         }
                         .padding(.top, Spacing.md)
 
-                        Divider().background(Color.stone)
-
                         // 메뉴
                         VStack(spacing: Spacing.xs) {
                             NavigationLink(destination: MyCrewListView()) {

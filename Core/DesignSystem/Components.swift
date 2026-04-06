@@ -33,10 +33,8 @@ struct ParamOutlineButtonStyle: ButtonStyle {
             .foregroundColor(Color.void)
             .padding(.vertical, 12)
             .padding(.horizontal, 24)
-            .overlay(
-                Capsule()
-                    .stroke(Color.stone, lineWidth: 1)
-            )
+            .background(Color.surfaceContainer)
+            .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }

@@ -4,6 +4,7 @@ import SwiftUI
 struct HomeFeedView: View {
     @StateObject private var viewModel = HomeFeedViewModel()
     @EnvironmentObject private var authManager: AuthManager
+    @State private var showCreateWave = false
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -14,16 +15,21 @@ struct HomeFeedView: View {
                 feedContent
             }
         }
+        .sheet(isPresented: $showCreateWave) {
+            CreateWaveView {
+                Task { await viewModel.loadInitial() }
+            }
+        }
         .task { await viewModel.loadInitial() }
     }
 
-    // MARK: - 헤더 (No-Line Rule)
+    // MARK: - 헤더 (글래스모피즘, No-Line Rule)
     private var header: some View {
         HStack {
             Text("PARAM")
-                .heading2Style()
+                .font(.system(size: 20, weight: .black))
                 .foregroundColor(.void)
-                .tracking(6)
+                .tracking(3)
 
             Spacer()
 
@@ -35,7 +41,7 @@ struct HomeFeedView: View {
         }
         .padding(.horizontal, Spacing.md)
         .padding(.vertical, Spacing.sm)
-        .background(Color.paper)
+        .glassHeader()
     }
 
     // MARK: - 피드 콘텐츠
@@ -43,10 +49,22 @@ struct HomeFeedView: View {
     private var feedContent: some View {
         if viewModel.isLoading && viewModel.items.isEmpty {
             Spacer()
-            ProgressView().tint(.wave400)
+            ParamLoadingView()
+            Spacer()
+        } else if let error = viewModel.errorMessage, viewModel.items.isEmpty {
+            Spacer()
+            ParamErrorView(message: error) {
+                Task { await viewModel.loadInitial() }
+            }
             Spacer()
         } else if viewModel.items.isEmpty {
-            emptyState
+            Spacer()
+            ParamEmptyView(
+                icon: "waveform",
+                title: "아직 파동이 없어요",
+                subtitle: "첫 번째 파동을 올려보세요"
+            )
+            Spacer()
         } else {
             feedList
         }
@@ -55,11 +73,13 @@ struct HomeFeedView: View {
     // MARK: - 피드 리스트 + 무한스크롤
     private var feedList: some View {
         ScrollView {
-            LazyVStack(spacing: Spacing.md) {
+            LazyVStack(spacing: 1) {
                 ForEach(viewModel.items) { item in
                     NavigationLink(destination: WaveDetailView(item: item)) {
                         WaveCardView(item: item) { crewId, crewName in
-                            // 크루 탭 → 추후 CrewFeedView 연결
+                            // TODO: CrewFeedView 연결
+                        } onResonateTap: {
+                            Task { await viewModel.toggleResonate(item: item) }
                         }
                     }
                     .buttonStyle(.plain)
@@ -74,23 +94,8 @@ struct HomeFeedView: View {
                     ProgressView().tint(.ash).padding(.vertical, Spacing.md)
                 }
             }
-            .padding(.horizontal, Spacing.md)
             .padding(.vertical, Spacing.sm)
         }
         .refreshable { await viewModel.loadInitial() }
-    }
-
-    // MARK: - 빈 피드
-    private var emptyState: some View {
-        VStack(spacing: Spacing.sm) {
-            Spacer()
-            Text("아직 파동이 없어요")
-                .bodyStyle()
-                .foregroundColor(.void)
-            Text("첫 번째 파동을 올려보세요")
-                .captionStyle()
-                .foregroundColor(.ash)
-            Spacer()
-        }
     }
 }

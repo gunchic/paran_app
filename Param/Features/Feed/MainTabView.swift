@@ -1,69 +1,93 @@
 import SwiftUI
 
-// 메인 탭바 — 4개 탭
-// No-Line Rule: 탭바 구분선 없음, 배경색 변화로 구분
+/// 메인 탭바 — 커스텀 중앙 파동 버튼 포함
 struct MainTabView: View {
     @EnvironmentObject private var authManager: AuthManager
     @State private var selectedTab: Int = 0
-
-    init() {
-        // 탭바 스타일 커스터마이징
-        let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        // paper 배경 (hex #F5F4F2)
-        appearance.backgroundColor = UIColor(red: 0.961, green: 0.957, blue: 0.949, alpha: 1.0)
-        // 상단 구분선 제거 (No-Line Rule)
-        appearance.shadowColor = .clear
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
-        // 선택 색상: wave400
-        UITabBar.appearance().tintColor = UIColor(red: 0.494, green: 0.722, blue: 0.788, alpha: 1.0)
-        // 미선택 색상: ash
-        UITabBar.appearance().unselectedItemTintColor = UIColor(red: 0.604, green: 0.600, blue: 0.580, alpha: 1.0)
-    }
+    @State private var showCreateWave = false
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // 홈 피드
-            NavigationStack {
-                HomeFeedView()
-            }
-            .tabItem {
-                Label("홈", systemImage: "house.fill")
-            }
-            .tag(0)
+        ZStack(alignment: .bottom) {
+            // 탭 콘텐츠
+            tabContent
+                .padding(.bottom, 60) // 커스텀 탭바 높이 확보
 
-            // 크루 탐색
-            NavigationStack {
-                CrewExploreView()
-            }
-            .tabItem {
-                Label("탐색", systemImage: "magnifyingglass")
-            }
-            .tag(1)
-
-            // 파동 올리기
-            NavigationStack {
-                CreateWaveView()
-            }
-            .tabItem {
-                Label("파동", systemImage: "plus.circle.fill")
-            }
-            .tag(2)
-
-            // 마이페이지
-            NavigationStack {
-                MyPageView()
-            }
-            .tabItem {
-                Label("프로필", systemImage: "person.fill")
-            }
-            .tag(3)
+            // 커스텀 탭바
+            customTabBar
+        }
+        .ignoresSafeArea(.keyboard)
+        .sheet(isPresented: $showCreateWave) {
+            CreateWaveView(onSuccess: nil)
         }
     }
-}
 
-#Preview {
-    MainTabView()
-        .environmentObject(AuthManager())
+    // MARK: - 탭 콘텐츠
+    @ViewBuilder
+    private var tabContent: some View {
+        switch selectedTab {
+        case 0:
+            NavigationStack { HomeFeedView() }
+        case 1:
+            NavigationStack { CrewExploreView() }
+        case 3:
+            NavigationStack { MyPageView() }
+        default:
+            NavigationStack { HomeFeedView() }
+        }
+    }
+
+    // MARK: - 커스텀 탭바
+    private var customTabBar: some View {
+        ZStack {
+            // 탭바 배경 (No-Line Rule: 그림자로만 구분)
+            Color.paper
+                .frame(height: 60)
+                .shadow(color: Color.void.opacity(0.06), radius: 8, x: 0, y: -2)
+
+            HStack(spacing: 0) {
+                tabButton(icon: "house.fill", label: "홈", tag: 0)
+                tabButton(icon: "magnifyingglass", label: "탐색", tag: 1)
+
+                // 중앙 파동 버튼
+                Button {
+                    showCreateWave = true
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(Color.wave400)
+                            .frame(width: 52, height: 52)
+                            .shadow(color: Color.wave400.opacity(0.4), radius: 8, x: 0, y: 4)
+
+                        Image(systemName: "plus")
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundColor(.void)
+                    }
+                }
+                .offset(y: -14)
+                .frame(maxWidth: .infinity)
+
+                tabButton(icon: "bell", label: "알림", tag: 2)
+                tabButton(icon: "person.fill", label: "나", tag: 3)
+            }
+            .padding(.horizontal, Spacing.md)
+            .frame(height: 60)
+        }
+    }
+
+    private func tabButton(icon: String, label: String, tag: Int) -> some View {
+        Button {
+            selectedTab = tag
+        } label: {
+            VStack(spacing: 3) {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(selectedTab == tag ? .wave400 : .ash)
+                Text(label)
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundColor(selectedTab == tag ? .wave400 : .ash)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+    }
 }

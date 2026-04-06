@@ -1,57 +1,49 @@
 import SwiftUI
 
-/// 홈 피드 파동 카드 컴포넌트
+/// 홈 피드 파동 카드 — 풀 너비, No-Line Rule
 struct WaveCardView: View {
     let item: WaveFeedItem
     let onCrewTap: ((UUID, String) -> Void)?
+    var onResonateTap: (() -> Void)? = nil
 
-    init(item: WaveFeedItem, onCrewTap: ((UUID, String) -> Void)? = nil) {
+    @State private var isResonated: Bool = false
+
+    init(item: WaveFeedItem, onCrewTap: ((UUID, String) -> Void)? = nil, onResonateTap: (() -> Void)? = nil) {
         self.item = item
         self.onCrewTap = onCrewTap
+        self.onResonateTap = onResonateTap
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // 이미지 영역
+            // 이미지 영역 (풀 너비)
             if let imageUrl = item.displayImageUrl {
                 mediaSection(url: imageUrl)
             }
 
+            // 콘텐츠 영역
             VStack(alignment: .leading, spacing: Spacing.sm) {
-                // 유저 정보
                 authorRow
-
-                // 파동 텍스트
-                Text(item.body)
-                    .bodyStyle()
-                    .foregroundColor(.void)
-                    .lineLimit(3)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                // 크루 배지
+                bodyText
                 if let crewId = item.crewId, let crewName = item.crewName {
                     crewBadge(id: crewId, name: crewName)
                 }
-
-                // 액션 바
                 actionBar
             }
-            .padding(Spacing.md)
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.sm)
+            .padding(.bottom, Spacing.md)
         }
         .background(Color.surfaceLowest)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
-        .shadow(color: Color.void.opacity(0.06), radius: 8, x: 0, y: 2)
     }
 
-    // MARK: - 미디어 섹션
+    // MARK: - 미디어
     private func mediaSection(url: String) -> some View {
         ZStack(alignment: .center) {
             AsyncImage(url: URL(string: url)) { phase in
                 switch phase {
                 case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
+                    image.resizable().scaledToFill()
                 case .failure:
                     Color.surfaceContainer
                 case .empty:
@@ -62,7 +54,7 @@ struct WaveCardView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 200)
+            .frame(height: 220)
             .clipped()
 
             if item.hasYouTube {
@@ -74,10 +66,9 @@ struct WaveCardView: View {
         }
     }
 
-    // MARK: - 작성자 행
+    // MARK: - 작성자
     private var authorRow: some View {
-        HStack(spacing: Spacing.xs) {
-            // 아바타
+        HStack(spacing: Spacing.sm) {
             AsyncImage(url: URL(string: item.authorProfileImageUrl ?? "")) { phase in
                 if case .success(let image) = phase {
                     image.resizable().scaledToFill()
@@ -88,18 +79,25 @@ struct WaveCardView: View {
             .frame(width: 32, height: 32)
             .clipShape(Circle())
 
-            // 닉네임
             Text(item.authorNickname ?? "알 수 없음")
                 .captionStyle()
                 .foregroundColor(.ash)
 
             Spacer()
 
-            // 작성 시간
-            Text(item.createdAt.relativeString)
+            Text(item.createdAt.paramRelative)
                 .captionStyle()
                 .foregroundColor(.ash)
         }
+    }
+
+    // MARK: - 본문
+    private var bodyText: some View {
+        Text(item.body)
+            .bodyStyle()
+            .foregroundColor(.void)
+            .lineLimit(4)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - 크루 배지
@@ -112,7 +110,7 @@ struct WaveCardView: View {
                 .foregroundColor(.wave600)
                 .padding(.horizontal, Spacing.sm)
                 .padding(.vertical, Spacing.xs)
-                .background(Color.wave400.opacity(0.1))
+                .background(Color.wave400.opacity(0.12))
                 .clipShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -121,20 +119,28 @@ struct WaveCardView: View {
     // MARK: - 액션 바
     private var actionBar: some View {
         HStack(spacing: Spacing.md) {
-            // 나도그래 (비활성 상태 - 추후 구현)
-            HStack(spacing: 4) {
-                Image(systemName: "heart")
-                    .font(.system(size: 14))
-                    .foregroundColor(.ash)
-                Text("\(item.waveCount)")
-                    .captionStyle()
-                    .foregroundColor(.ash)
+            // 나도그래
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    isResonated.toggle()
+                }
+                onResonateTap?()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: isResonated ? "heart.fill" : "heart")
+                        .font(.system(size: 15))
+                        .foregroundColor(isResonated ? .wave400 : .ash)
+                    Text("\(item.waveCount + (isResonated ? 1 : 0))")
+                        .captionStyle()
+                        .foregroundColor(isResonated ? .wave400 : .ash)
+                }
             }
+            .buttonStyle(.plain)
 
             // 댓글
             HStack(spacing: 4) {
                 Image(systemName: "bubble.left")
-                    .font(.system(size: 14))
+                    .font(.system(size: 15))
                     .foregroundColor(.ash)
                 Text("\(item.commentCount)")
                     .captionStyle()
@@ -146,9 +152,9 @@ struct WaveCardView: View {
     }
 }
 
-// MARK: - Date 상대시간 Extension
-private extension Date {
-    var relativeString: String {
+// MARK: - Date 상대시간
+extension Date {
+    var paramRelative: String {
         let diff = Int(Date().timeIntervalSince(self))
         if diff < 60 { return "방금 전" }
         if diff < 3600 { return "\(diff / 60)분 전" }
