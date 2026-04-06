@@ -35,7 +35,7 @@ final class WaveService {
         let imageUrl: String?
         let thumbnailUrl: String?
         let contentType: String
-        let imageOffsetY: Double?
+        // imageOffsetY: 015_storage_setup.sql 마이그레이션 후 추가
     }
 
     func createMoment(
@@ -43,7 +43,7 @@ final class WaveService {
         body: String,
         imageUrl: String? = nil,
         thumbnailUrl: String? = nil,
-        imageOffsetY: Double? = nil
+        imageOffsetY: Double? = nil  // 마이그레이션 후 MomentCreate에 포함 예정
     ) async throws -> UUID {
         let contentType = imageUrl != nil ? "image" : "text"
         let payload = MomentCreate(
@@ -51,8 +51,7 @@ final class WaveService {
             body: body,
             imageUrl: imageUrl,
             thumbnailUrl: thumbnailUrl,
-            contentType: contentType,
-            imageOffsetY: imageOffsetY
+            contentType: contentType
         )
         struct CreatedMoment: Decodable { let id: UUID }
         let result: [CreatedMoment] = try await supabase
