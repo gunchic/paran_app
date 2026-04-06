@@ -19,6 +19,7 @@ struct CreateWaveView: View {
                     VStack(alignment: .leading, spacing: Spacing.lg) {
                         imageSection
                         textSection
+                        hashtagSection
                     }
                     .padding(Spacing.md)
                 }
@@ -104,6 +105,63 @@ struct CreateWaveView: View {
             }
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - 해시태그 섹션
+    private var hashtagSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            // 확정된 태그 배지
+            if !viewModel.hashtags.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: Spacing.xs) {
+                        ForEach(viewModel.hashtags, id: \.self) { tag in
+                            HStack(spacing: 4) {
+                                Text("#\(tag)")
+                                    .captionStyle()
+                                    .foregroundColor(.slate)
+                                Button {
+                                    viewModel.removeHashtag(tag)
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundColor(.ash)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color.surfaceContainer)
+                            .clipShape(Capsule())
+                        }
+                    }
+                }
+            }
+
+            // 태그 입력창 (최대 5개 미만일 때만)
+            if viewModel.hashtags.count < 5 {
+                TextField("#태그 입력 후 스페이스", text: $viewModel.hashtagInput)
+                    .font(.paramBody)
+                    .foregroundColor(.void)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .onChange(of: viewModel.hashtagInput) { val in
+                        // 스페이스 또는 개행 입력 시 태그 확정
+                        if val.last == " " || val.last == "\n" {
+                            viewModel.processHashtagInput()
+                        }
+                        // # 외 특수문자 제거
+                        let filtered = val.unicodeScalars.filter {
+                            CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "#_")).contains($0)
+                        }
+                        let clean = String(String.UnicodeScalarView(filtered))
+                        if clean != val { viewModel.hashtagInput = clean }
+                    }
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.xs)
+                    .background(Color.surfaceContainer)
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
+            }
+        }
     }
 
     // MARK: - 텍스트 입력

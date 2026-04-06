@@ -4,19 +4,32 @@ import SwiftUI
 struct WaveCardView: View {
     let item: WaveFeedItem
     let onCrewTap: ((UUID, String) -> Void)?
+    let onHashtagTap: ((String) -> Void)?
     var onResonateTap: (() -> Void)? = nil
+    var hideTopComment: Bool = false
 
     @State private var isResonated: Bool = false
+    @State private var resonateCount: Int = 0
 
-    init(item: WaveFeedItem, onCrewTap: ((UUID, String) -> Void)? = nil, onResonateTap: (() -> Void)? = nil) {
+    init(
+        item: WaveFeedItem,
+        onCrewTap: ((UUID, String) -> Void)? = nil,
+        onHashtagTap: ((String) -> Void)? = nil,
+        onResonateTap: (() -> Void)? = nil,
+        hideTopComment: Bool = false
+    ) {
         self.item = item
         self.onCrewTap = onCrewTap
+        self.onHashtagTap = onHashtagTap
         self.onResonateTap = onResonateTap
+        self.hideTopComment = hideTopComment
+        _isResonated = State(initialValue: item.isResonated)
+        _resonateCount = State(initialValue: item.waveCount)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // 이미지 영역 (풀 너비)
+            // 이미지 영역
             if let imageUrl = item.displayImageUrl {
                 mediaSection(url: imageUrl)
             }
@@ -25,16 +38,37 @@ struct WaveCardView: View {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 authorRow
                 bodyText
-                if let crewId = item.crewId, let crewName = item.crewName {
-                    crewBadge(id: crewId, name: crewName)
+
+                // 크루 배지 + 해시태그 가로 스크롤
+                if item.crewId != nil || !item.hashtags.isEmpty {
+                    badgeRow
                 }
+
+                // 나도그래 카운트 텍스트
+                if resonateCount > 0 {
+                    resonateCountText
+                }
+
                 actionBar
             }
             .padding(.horizontal, Spacing.md)
             .padding(.top, Spacing.sm)
-            .padding(.bottom, Spacing.md)
+            .padding(.bottom, hideTopComment ? Spacing.md : Spacing.xs)
+
+            // 상위 댓글 1개
+            if !hideTopComment, let comment = item.topComment {
+                topCommentRow(comment)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.bottom, Spacing.md)
+            }
         }
         .background(Color.surfaceLowest)
+        .onAppear {
+            isResonated = item.isResonated
+            resonateCount = item.waveCount
+        }
+        .onChange(of: item.isResonated) { newVal in isResonated = newVal }
+        .onChange(of: item.waveCount) { newVal in resonateCount = newVal }
     }
 
     // MARK: - 미디어
@@ -47,8 +81,7 @@ struct WaveCardView: View {
                 case .failure:
                     Color.surfaceContainer
                 case .empty:
-                    Color.surfaceContainer
-                        .overlay(ProgressView().tint(.ash))
+                    Color.surfaceContainer.overlay(ProgressView().tint(.ash))
                 @unknown default:
                     Color.surfaceContainer
                 }
@@ -66,7 +99,7 @@ struct WaveCardView: View {
         }
     }
 
-    // MARK: - 작성자
+    // MARK: - 작성자 행
     private var authorRow: some View {
         HStack(spacing: Spacing.sm) {
             AsyncImage(url: URL(string: item.authorProfileImageUrl ?? "")) { phase in
@@ -100,55 +133,127 @@ struct WaveCardView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - 크루 배지
-    private func crewBadge(id: UUID, name: String) -> some View {
-        Button {
-            onCrewTap?(id, name)
-        } label: {
-            Text(name)
-                .captionStyle()
-                .foregroundColor(.wave600)
-                .padding(.horizontal, Spacing.sm)
-                .padding(.vertical, Spacing.xs)
-                .background(Color.wave400.opacity(0.12))
-                .clipShape(Capsule())
+    // MARK: - 크루 배지 + 해시태그 가로 스크롤
+    private var badgeRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.xs) {
+                // 크루 배지 (맨 앞 고정)
+                if let crewId = item.crewId, let crewName = item.crewName {
+                    Button { onCrewTap?(crewId, crewName) } label: {
+                        Text(crewName)
+                            .font(.caption.weight(.semibold))
+                            .tracking(1)
+                            .foregroundColor(.void)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color.wave400)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                // 해시태그 배지
+                ForEach(item.hashtags, id: \.self) { tag in
+                    Button { onHashtagTap?(tag) } label: {
+                        Text("#\(tag)")
+                            .captionStyle()
+                            .foregroundColor(.slate)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color.surfaceContainer)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
-        .buttonStyle(.plain)
+    }
+
+    // MARK: - 나도그래 카운트 텍스트
+    private var resonateCountText: some View {
+        Text("♥ 나만 그런 줄 알았는데 \(resonateCount)명 더")
+            .font(.caption.weight(.medium))
+            .tracking(1)
+            .foregroundColor(.wave400)
     }
 
     // MARK: - 액션 바
     private var actionBar: some View {
         HStack(spacing: Spacing.md) {
-            // 나도그래
+            // 나도그래 버튼
             Button {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     isResonated.toggle()
+                    resonateCount += isResonated ? 1 : -1
                 }
                 onResonateTap?()
             } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: isResonated ? "heart.fill" : "heart")
-                        .font(.system(size: 15))
-                        .foregroundColor(isResonated ? .wave400 : .ash)
-                    Text("\(item.waveCount + (isResonated ? 1 : 0))")
-                        .captionStyle()
-                        .foregroundColor(isResonated ? .wave400 : .ash)
-                }
+                Image(systemName: isResonated ? "heart.fill" : "heart")
+                    .font(.system(size: 16))
+                    .foregroundColor(isResonated ? .wave400 : .ash)
             }
             .buttonStyle(.plain)
 
-            // 댓글
+            // 댓글 수
             HStack(spacing: 4) {
                 Image(systemName: "bubble.left")
-                    .font(.system(size: 15))
+                    .font(.system(size: 16))
                     .foregroundColor(.ash)
-                Text("\(item.commentCount)")
-                    .captionStyle()
-                    .foregroundColor(.ash)
+                if item.commentCount > 0 {
+                    Text("\(item.commentCount)")
+                        .captionStyle()
+                        .foregroundColor(.ash)
+                }
             }
 
             Spacer()
         }
+    }
+
+    // MARK: - 상위 댓글 1개
+    private func topCommentRow(_ comment: Comment) -> some View {
+        HStack(alignment: .top, spacing: Spacing.sm) {
+            // 아바타
+            AsyncImage(url: URL(string: comment.userAvatarUrl ?? "")) { phase in
+                if case .success(let img) = phase {
+                    img.resizable().scaledToFill()
+                } else {
+                    Circle().fill(Color.surfaceContainer)
+                }
+            }
+            .frame(width: 24, height: 24)
+            .clipShape(Circle())
+
+            // 닉네임 + 내용
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: Spacing.xs) {
+                    Text(comment.userNickname ?? "알 수 없음")
+                        .captionStyle()
+                        .foregroundColor(.ash)
+                    Text(comment.body)
+                        .captionStyle()
+                        .foregroundColor(.void)
+                        .lineLimit(2)
+                }
+            }
+
+            Spacer()
+
+            // 댓글 이미지 썸네일
+            if let imgUrl = comment.imageUrl {
+                AsyncImage(url: URL(string: imgUrl)) { phase in
+                    if case .success(let img) = phase {
+                        img.resizable().scaledToFill()
+                    } else {
+                        Color.surfaceContainer
+                    }
+                }
+                .frame(width: 40, height: 40)
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: Radius.xs, style: .continuous))
+            }
+        }
+        .padding(.top, Spacing.xs)
     }
 }
 

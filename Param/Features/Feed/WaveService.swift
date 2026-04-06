@@ -43,7 +43,7 @@ final class WaveService {
         body: String,
         imageUrl: String? = nil,
         thumbnailUrl: String? = nil
-    ) async throws {
+    ) async throws -> UUID {
         let contentType = imageUrl != nil ? "image" : "text"
         let payload = MomentCreate(
             userId: userId,
@@ -52,9 +52,26 @@ final class WaveService {
             thumbnailUrl: thumbnailUrl,
             contentType: contentType
         )
-        try await supabase
+        struct CreatedMoment: Decodable { let id: UUID }
+        let result: [CreatedMoment] = try await supabase
             .from("moments")
             .insert(payload)
+            .select("id")
+            .execute()
+            .value
+        guard let id = result.first?.id else { throw ParamError.unknown("파동 등록 실패") }
+        return id
+    }
+
+    // MARK: - 해시태그 등록 (wave_hashtags INSERT)
+
+    func insertHashtags(_ tags: [String], momentId: UUID) async throws {
+        guard !tags.isEmpty else { return }
+        struct HashtagInsert: Encodable { let momentId: UUID; let tag: String }
+        let rows = tags.map { HashtagInsert(momentId: momentId, tag: $0.lowercased()) }
+        try await supabase
+            .from("wave_hashtags")
+            .insert(rows)
             .execute()
     }
 

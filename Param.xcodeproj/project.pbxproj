@@ -57,6 +57,10 @@
 		DD11EE22FF33AA44BB55CC6E /* ParamErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD11EE22FF33AA44BB55CC6D /* ParamErrorView.swift */; };
 		DD11EE22FF33AA44BB55CC70 /* CreateWaveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD11EE22FF33AA44BB55CC6F /* CreateWaveViewModel.swift */; };
 		DD11EE22FF33AA44BB55CC72 /* UserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD11EE22FF33AA44BB55CC71 /* UserService.swift */; };
+		EE11FF22AA33BB44CC55DD75 /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11FF22AA33BB44CC55DD74 /* Comment.swift */; };
+		EE11FF22AA33BB44CC55DD77 /* Hashtag.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11FF22AA33BB44CC55DD76 /* Hashtag.swift */; };
+		EE11FF22AA33BB44CC55DD79 /* HashtagFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11FF22AA33BB44CC55DD78 /* HashtagFeedView.swift */; };
+		EE11FF22AA33BB44CC55DD7B /* CommentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11FF22AA33BB44CC55DD7A /* CommentService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -110,6 +114,10 @@
 		DD11EE22FF33AA44BB55CC6D /* ParamErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParamErrorView.swift; sourceTree = "<group>"; };
 		DD11EE22FF33AA44BB55CC6F /* CreateWaveViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateWaveViewModel.swift; sourceTree = "<group>"; };
 		DD11EE22FF33AA44BB55CC71 /* UserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserService.swift; sourceTree = "<group>"; };
+		EE11FF22AA33BB44CC55DD74 /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
+		EE11FF22AA33BB44CC55DD76 /* Hashtag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hashtag.swift; sourceTree = "<group>"; };
+		EE11FF22AA33BB44CC55DD78 /* HashtagFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HashtagFeedView.swift; sourceTree = "<group>"; };
+		EE11FF22AA33BB44CC55DD7A /* CommentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -182,6 +190,7 @@
 				DD44EE55FF66AA11BB22CC33 /* Extensions */,
 				EE55FF66AA11BB22CC33DD44 /* Network */,
 				DD11EE22FF33AA44BB55CC73 /* Services */,
+				DD11EE22FF33AA44BB55CC67 /* ParamError.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -229,6 +238,7 @@
 			children = (
 				7A2B3C4D5E6F7A2B3C4D5E6F /* HomeFeedView.swift */,
 				6646C1B086834E22AEE2E3E6 /* HomeFeedViewModel.swift */,
+				EE11FF22AA33BB44CC55DD78 /* HashtagFeedView.swift */,
 				8B3C4D5E6F7A8B3C4D5E6F7A /* MainTabView.swift */,
 				9C4D5E6F7A8B9C4D5E6F7A8B /* WaveCardView.swift */,
 				AD5E6F7A8B9CAD5E6F7A8B9C /* WaveDetailView.swift */,
@@ -241,8 +251,10 @@
 			isa = PBXGroup;
 			children = (
 				47F24152637447F241526374 /* Avatar.swift */,
+				EE11FF22AA33BB44CC55DD74 /* Comment.swift */,
 				580352637485580352637485 /* Crew.swift */,
 				691463748596691463748596 /* CrewKeyword.swift */,
+				EE11FF22AA33BB44CC55DD76 /* Hashtag.swift */,
 				7A25748596A77A25748596A7 /* User.swift */,
 				8B36859607B88B36859607B8 /* Wave.swift */,
 				A9B4C2C56FF846E79388C56B /* WaveFeedItem.swift */,
@@ -270,6 +282,7 @@
 		DD11EE22FF33AA44BB55CC73 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				EE11FF22AA33BB44CC55DD7A /* CommentService.swift */,
 				DD11EE22FF33AA44BB55CC71 /* UserService.swift */,
 			);
 			path = Services;
@@ -279,7 +292,6 @@
 			isa = PBXGroup;
 			children = (
 				3ED4E575B6AA40D09C80A5C3 /* SupabaseClient.swift */,
-				DD11EE22FF33AA44BB55CC67 /* ParamError.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -439,6 +451,10 @@
 				DD11EE22FF33AA44BB55CC6E /* ParamErrorView.swift in Sources */,
 				DD11EE22FF33AA44BB55CC70 /* CreateWaveViewModel.swift in Sources */,
 				DD11EE22FF33AA44BB55CC72 /* UserService.swift in Sources */,
+				EE11FF22AA33BB44CC55DD75 /* Comment.swift in Sources */,
+				EE11FF22AA33BB44CC55DD77 /* Hashtag.swift in Sources */,
+				EE11FF22AA33BB44CC55DD79 /* HashtagFeedView.swift in Sources */,
+				EE11FF22AA33BB44CC55DD7B /* CommentService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

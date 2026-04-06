@@ -13,9 +13,21 @@ struct WaveFeedItem: Identifiable, Codable {
     let crewName: String?
     let authorNickname: String?
     let authorProfileImageUrl: String?
-    let waveCount: Int
+    var waveCount: Int
     let commentCount: Int
     let createdAt: Date
+
+    // 별도 조회 후 주입 (moment_feed에 없는 데이터 — Codable 제외)
+    var hashtags: [String] = []
+    var topComment: Comment? = nil
+    var isResonated: Bool = false
+
+    enum CodingKeys: String, CodingKey {
+        case id, userId, body, imageUrl, thumbnailUrl
+        case youtubeVideoId, youtubeThumbnail
+        case crewId, crewName, authorNickname, authorProfileImageUrl
+        case waveCount, commentCount, createdAt
+    }
 
     /// 표시할 이미지 URL (thumbnail 우선, 없으면 유튜브 썸네일)
     var displayImageUrl: String? {
