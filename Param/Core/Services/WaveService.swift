@@ -8,8 +8,8 @@ final class WaveService {
     private let pageSize = 20
 
     private let feedSelect = """
-        id, user_id, author_nickname, author_profile_image_url, \
-        body, image_url, thumbnail_url, youtube_video_id, youtube_thumbnail, \
+        id, user_id, author_nickname, author_profile_image_url,
+        body, image_url, thumbnail_url, youtube_video_id, youtube_thumbnail,
         wave_count, comment_count, crew_id, crew_name, created_at
         """
 
@@ -28,7 +28,7 @@ final class WaveService {
             .value
     }
 
-    // MARK: - 파람 올리기 (moments INSERT)
+    // MARK: - 파람 올리기
 
     struct MomentCreate: Encodable {
         let userId: UUID
@@ -58,15 +58,15 @@ final class WaveService {
             .execute()
     }
 
-    // MARK: - 이미지 업로드 (Supabase Storage)
+    // MARK: - 이미지 업로드
 
     func uploadImage(_ image: UIImage, userId: UUID) async throws -> (imageUrl: String, thumbnailUrl: String) {
         guard let compressed = image.jpegData(compressionQuality: 0.8),
               let thumbnail = image.resized(to: CGSize(width: 200, height: 200))?.jpegData(compressionQuality: 0.7)
-        else { throw ParamError.uploadFailed }
+        else { throw ParamError.unknown("이미지 변환 실패") }
 
-        let fileName = "\(userId.uuidString)/\(UUID().uuidString).jpg"
-        let thumbName = "\(userId.uuidString)/thumb_\(UUID().uuidString).jpg"
+        let fileName = "\(userId.uuidString)/\(UUID().uuidString)"
+        let thumbName = "\(userId.uuidString)/thumb_\(UUID().uuidString)"
 
         try await supabase.storage
             .from("moments")
@@ -80,9 +80,7 @@ final class WaveService {
         return (imageUrl: baseUrl + fileName, thumbnailUrl: baseUrl + thumbName)
     }
 
-    // MARK: - 나도그래 토글 (waves INSERT/DELETE)
-
-    private struct ResonanceCheck: Decodable { let id: UUID }
+    // MARK: - 나도그래 토글
 
     struct ResonanceInsert: Encodable {
         let momentId: UUID
@@ -124,6 +122,10 @@ final class WaveService {
             .execute()
             .value
         return !rows.isEmpty
+    }
+
+    private struct ResonanceCheck: Decodable {
+        let id: UUID
     }
 }
 

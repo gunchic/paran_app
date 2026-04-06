@@ -73,7 +73,7 @@ final class AuthManager: ObservableObject {
         do {
             let rows: [User] = try await supabase
                 .from("users")
-                .select()
+                .select("id, email, nickname, avatar_id, current_crew_id, is_profile_set, created_at")
                 .eq("id", value: userId.uuidString)
                 .limit(1)
                 .execute()
@@ -91,7 +91,7 @@ final class AuthManager: ObservableObject {
                 let inserted: [User] = try await supabase
                     .from("users")
                     .insert(insert)
-                    .select()
+                    .select("id, email, nickname, avatar_id, current_crew_id, is_profile_set, created_at")
                     .execute()
                     .value
                 currentUser = inserted.first
