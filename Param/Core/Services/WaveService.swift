@@ -69,14 +69,14 @@ final class WaveService {
         let thumbName = "\(userId.uuidString)/thumb_\(UUID().uuidString)"
 
         try await supabase.storage
-            .from("moments")
+            .from("waves")
             .upload(fileName, data: compressed, options: .init(contentType: "image/jpeg", upsert: false))
 
         try await supabase.storage
-            .from("moments")
+            .from("waves")
             .upload(thumbName, data: thumbnail, options: .init(contentType: "image/jpeg", upsert: false))
 
-        let baseUrl = "https://ptnltusonbczrquzurti.supabase.co/storage/v1/object/public/moments/"
+        let baseUrl = "https://ptnltusonbczrquzurti.supabase.co/storage/v1/object/public/waves/"
         return (imageUrl: baseUrl + fileName, thumbnailUrl: baseUrl + thumbName)
     }
 
