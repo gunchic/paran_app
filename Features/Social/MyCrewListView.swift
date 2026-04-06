@@ -15,7 +15,7 @@ struct MyCrewListView: View {
                                 CrewBadgeView(crew: crew)
 
                                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                                    Text(crew.crewName)
+                                    Text(crew.displayName)
                                         .bodyStyle()
                                         .foregroundColor(.void)
 

@@ -9,7 +9,7 @@ struct CrewBadgeView: View {
             Circle()
                 .fill(badgeColor)
 
-            Text(String(crew.crewName.prefix(1)))
+            Text(String(crew.displayName.prefix(1)))
                 .font(.system(size: size * 0.4, weight: .bold))
                 .foregroundColor(.white)
         }

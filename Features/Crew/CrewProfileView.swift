@@ -11,7 +11,7 @@ struct CrewProfileView: View {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     // 헤더
                     VStack(alignment: .leading, spacing: Spacing.sm) {
-                        Text(crew.crewName)
+                        Text(crew.displayName)
                             .heading1Style()
                             .foregroundColor(.void)
 
@@ -44,7 +44,7 @@ struct CrewProfileView: View {
                 }
             }
         }
-        .navigationTitle(crew.crewName)
+        .navigationTitle(crew.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

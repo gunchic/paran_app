@@ -1,11 +1,9 @@
 import SwiftUI
 
+/// CR-02 크루 생성 화면
 struct CrewCreateView: View {
     @Environment(\.dismiss) private var dismiss
-
-    @State private var crewName: String = ""
-    @State private var crewType: String = "keyword"
-    @State private var description: String = ""
+    @StateObject private var viewModel = CrewCreateViewModel()
     @FocusState private var isNameFocused: Bool
 
     var body: some View {
@@ -13,46 +11,19 @@ struct CrewCreateView: View {
             ZStack {
                 Color.paper.ignoresSafeArea()
 
-                VStack(alignment: .leading, spacing: Spacing.lg) {
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
-                        Text("크루 이름")
-                            .captionStyle()
-                            .foregroundColor(.ash)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Spacing.lg) {
+                        // 크루 이름
+                        nameSection
 
-                        TextField("선점할 단어 또는 문장", text: $crewName)
-                            .focused($isNameFocused)
-                            .foregroundColor(.void)
-                            .paramInput(isFocused: isNameFocused)
+                        // 크루 타입
+                        typeSection
+
+                        // 설명 (선택)
+                        descriptionSection
                     }
-
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
-                        Text("크루 타입")
-                            .captionStyle()
-                            .foregroundColor(.ash)
-
-                        Picker("크루 타입", selection: $crewType) {
-                            Text("키워드").tag("keyword")
-                            Text("감정").tag("emotion")
-                        }
-                        .pickerStyle(.segmented)
-                    }
-
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
-                        Text("설명 (선택)")
-                            .captionStyle()
-                            .foregroundColor(.ash)
-
-                        TextEditor(text: $description)
-                            .foregroundColor(.void)
-                            .scrollContentBackground(.hidden)
-                            .background(Color.surfaceHighest)
-                            .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
-                            .frame(minHeight: 100)
-                    }
-
-                    Spacer()
+                    .padding(Spacing.md)
                 }
-                .padding(Spacing.md)
             }
             .navigationTitle("크루 만들기")
             .navigationBarTitleDisplayMode(.inline)
@@ -62,15 +33,124 @@ struct CrewCreateView: View {
                         .buttonStyle(.paramGhost)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("만들기") {
-                        // TODO: 크루 생성
-                        dismiss()
+                    if viewModel.isCreating {
+                        ProgressView().tint(.wave400)
+                    } else {
+                        Button("만들기") {
+                            Task { await viewModel.createCrew() }
+                        }
+                        .buttonStyle(.paramPrimary)
+                        .disabled(!viewModel.canCreate)
                     }
-                    .buttonStyle(.paramPrimary)
-                    .disabled(crewName.isEmpty)
                 }
             }
         }
         .onAppear { isNameFocused = true }
+        .onChange(of: viewModel.createdCrew) { crew in
+            if crew != nil { dismiss() }
+        }
+        .alert("오류", isPresented: Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )) {
+            Button("확인", role: .cancel) { viewModel.errorMessage = nil }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
+    }
+
+    // MARK: - 크루 이름 섹션
+    private var nameSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("크루 이름")
+                .captionStyle()
+                .foregroundColor(.ash)
+
+            TextField("선점할 단어 또는 문장", text: $viewModel.crewName)
+                .focused($isNameFocused)
+                .foregroundColor(.void)
+                .autocorrectionDisabled()
+                .paramInput(isFocused: isNameFocused)
+
+            // 이름 상태 피드백
+            HStack(spacing: Spacing.xs) {
+                if viewModel.isCheckingName {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                        .tint(.ash)
+                    Text("확인 중...")
+                        .captionStyle()
+                        .foregroundColor(.ash)
+                } else if viewModel.isNameTaken {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(.red)
+                    Text("이미 사용 중인 이름이에요")
+                        .captionStyle()
+                        .foregroundColor(.red)
+                } else if !viewModel.crewName.trimmingCharacters(in: .whitespaces).isEmpty {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(.wave600)
+                    Text("사용 가능한 이름이에요")
+                        .captionStyle()
+                        .foregroundColor(.wave600)
+                }
+            }
+            .frame(height: 20)
+        }
+    }
+
+    // MARK: - 크루 타입 섹션
+    private var typeSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("크루 타입")
+                .captionStyle()
+                .foregroundColor(.ash)
+
+            HStack(spacing: Spacing.sm) {
+                typeButton(label: "키워드", value: "keyword")
+                typeButton(label: "감정", value: "emotion")
+            }
+
+            Text(viewModel.crewType == "keyword"
+                 ? "특정 키워드로 묶이는 크루예요"
+                 : "특정 감정이나 상태로 묶이는 크루예요")
+                .captionStyle()
+                .foregroundColor(.ash)
+        }
+    }
+
+    private func typeButton(label: String, value: String) -> some View {
+        let isSelected = viewModel.crewType == value
+        return Button {
+            viewModel.crewType = value
+        } label: {
+            Text(label)
+                .captionStyle()
+                .foregroundColor(isSelected ? .surfaceLowest : .void)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.sm)
+                .frame(maxWidth: .infinity)
+                .background(isSelected ? Color.wave800 : Color.surfaceContainer)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.sm, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - 설명 섹션
+    private var descriptionSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("설명 (선택)")
+                .captionStyle()
+                .foregroundColor(.ash)
+
+            TextEditor(text: $viewModel.description)
+                .foregroundColor(.void)
+                .scrollContentBackground(.hidden)
+                .background(Color.surfaceHighest)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
+                .frame(minHeight: 100)
+        }
     }
 }

@@ -10,7 +10,7 @@ struct CrewFeedView: View {
                 .bodyStyle()
                 .foregroundColor(.ash)
         }
-        .navigationTitle(crew.crewName)
+        .navigationTitle(crew.displayName)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
