@@ -288,8 +288,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 51E7EA5032F8449CB28756BB;
 			buildPhases = (
-				9DD257204DD149109F7424E7 /* Sources */
-,				3DD630D5F46C4973AB6D22E6 /* Frameworks */,
+				9DD257204DD149109F7424E7 /* Sources */,
+				3DD630D5F46C4973AB6D22E6 /* Frameworks */,
 				B1E5D6E3A64247EF99AF8864 /* Resources */,
 			);
 			buildRules = (
