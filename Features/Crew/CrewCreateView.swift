@@ -3,6 +3,7 @@ import SwiftUI
 /// CR-02 크루 생성 화면
 struct CrewCreateView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var authManager: AuthManager
     @StateObject private var viewModel = CrewCreateViewModel()
     @FocusState private var isNameFocused: Bool
 
@@ -37,7 +38,8 @@ struct CrewCreateView: View {
                         ProgressView().tint(.wave400)
                     } else {
                         Button("만들기") {
-                            Task { await viewModel.createCrew() }
+                            let userId = authManager.currentUser!.id
+                            Task { await viewModel.createCrew(userId: userId) }
                         }
                         .buttonStyle(.paramPrimary)
                         .disabled(!viewModel.canCreate)

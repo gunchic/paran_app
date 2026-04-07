@@ -45,7 +45,8 @@ final class CrewCreateViewModel: ObservableObject {
         }
     }
 
-    func createCrew() async {
+    // userId는 View(authManager)에서 주입 — 로그인 베이스 앱
+    func createCrew(userId: UUID) async {
         let trimmed = crewName.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         isCreating = true
@@ -53,6 +54,7 @@ final class CrewCreateViewModel: ObservableObject {
         defer { isCreating = false }
         do {
             createdCrew = try await service.createCrew(
+                userId: userId,
                 name: trimmed,
                 type: crewType,
                 description: description.isEmpty ? nil : description

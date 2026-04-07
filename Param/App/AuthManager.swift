@@ -3,15 +3,19 @@ import Supabase
 
 // MARK: - AuthManager
 // Supabase Auth 상태 관리 + 유저 테이블 연동
+// 파람은 로그인 베이스 앱 — hasSession true 이후 currentUser는 항상 non-nil
 @MainActor
 final class AuthManager: ObservableObject {
-    @Published var isLoggedIn: Bool = false
     @Published var currentUser: User? = nil
-    @Published var isLoading: Bool = false
-    /// true → 아직 Supabase 세션 복원 중 (앱 시작 직후)
-    @Published var isInitializing: Bool = true
+    /// 앱 시작 시 Supabase 세션 복원 중 여부
+    @Published var isLoading: Bool = true
+
+    /// 세션 유무 (= currentUser != nil)
+    var hasSession: Bool { currentUser != nil }
 
     private var supabase: SupabaseClient { SupabaseManager.shared.client }
+
+    private let userSelect = "id, email, nickname, avatar_id, current_crew_id, is_profile_set, created_at"
 
     init() {
         Task {
@@ -20,8 +24,8 @@ final class AuthManager: ObservableObject {
         }
     }
 
-    /// 앱 재설치 감지: UserDefaults는 삭제 시 초기화되지만 Keychain은 남아있음
-    /// 첫 실행 플래그가 없으면 재설치로 판단하고 Supabase 세션 초기화
+    // MARK: - 앱 재설치 감지
+    // Keychain은 앱 삭제 후에도 남아있으므로 첫 실행 플래그로 재설치 감지
     private func clearKeychainIfFreshInstall() async {
         let key = "param_has_launched"
         if !UserDefaults.standard.bool(forKey: key) {
@@ -37,17 +41,15 @@ final class AuthManager: ObservableObject {
             case .initialSession:
                 if let session {
                     await fetchOrCreateUser(session: session)
-                } else {
-                    isLoggedIn = false
                 }
-                isInitializing = false  // 세션 복원 완료
+                isLoading = false
             case .signedIn:
                 if let session {
                     await fetchOrCreateUser(session: session)
                 }
             case .signedOut, .userDeleted:
                 currentUser = nil
-                isLoggedIn = false
+                isLoading = false
             default:
                 break
             }
@@ -55,10 +57,7 @@ final class AuthManager: ObservableObject {
     }
 
     // MARK: - Google OAuth 로그인
-    // Info.plist에 URL Scheme "param" 등록 필요
     func loginWithGoogle() async throws {
-        isLoading = true
-        defer { isLoading = false }
         try await supabase.auth.signInWithOAuth(
             provider: .google,
             redirectTo: URL(string: "param://auth/callback")!
@@ -66,8 +65,24 @@ final class AuthManager: ObservableObject {
     }
 
     // MARK: - 로그아웃
-    func logout() async throws {
+    func signOut() async throws {
         try await supabase.auth.signOut()
+        currentUser = nil
+    }
+
+    // MARK: - 현재 유저 정보 새로고침
+    func refreshCurrentUser() async {
+        guard let userId = currentUser?.id else { return }
+        do {
+            let rows: [User] = try await supabase
+                .from("users")
+                .select(userSelect)
+                .eq("id", value: userId.uuidString)
+                .limit(1)
+                .execute()
+                .value
+            if let user = rows.first { currentUser = user }
+        } catch {}
     }
 
     // MARK: - 유저 조회 / 신규 생성
@@ -76,7 +91,7 @@ final class AuthManager: ObservableObject {
         do {
             let rows: [User] = try await supabase
                 .from("users")
-                .select("id, email, nickname, avatar_id, current_crew_id, is_profile_set, created_at")
+                .select(userSelect)
                 .eq("id", value: userId.uuidString)
                 .limit(1)
                 .execute()
@@ -84,30 +99,22 @@ final class AuthManager: ObservableObject {
 
             if let user = rows.first {
                 currentUser = user
-                isLoggedIn = true
             } else {
-                // 신규 유저 INSERT
-                let insert = UserInsert(
-                    id: userId,
-                    email: session.user.email
-                )
+                let insert = UserInsert(id: userId, email: session.user.email)
                 let inserted: [User] = try await supabase
                     .from("users")
                     .insert(insert)
-                    .select("id, email, nickname, avatar_id, current_crew_id, is_profile_set, created_at")
+                    .select(userSelect)
                     .execute()
                     .value
                 currentUser = inserted.first
-                isLoggedIn = currentUser != nil
             }
         } catch {
-            isLoggedIn = false
             currentUser = nil
         }
     }
 
-    // MARK: - 프로필 업데이트 (A-03 완료 시 호출)
-    // avatarId: nil이면 DB FK 위반 없이 null로 저장
+    // MARK: - 프로필 업데이트 (A-03, M-01 프로필 편집)
     func updateProfile(nickname: String, avatarId: UUID?) async throws {
         let userId = currentUser!.id
         let update = UserProfileUpdate(nickname: nickname, avatarId: avatarId)
@@ -115,7 +122,7 @@ final class AuthManager: ObservableObject {
             .from("users")
             .update(update)
             .eq("id", value: userId.uuidString)
-            .select("id, email, nickname, avatar_id, current_crew_id, is_profile_set, created_at")
+            .select(userSelect)
             .execute()
             .value
         currentUser = updated.first

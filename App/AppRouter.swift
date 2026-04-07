@@ -1,29 +1,29 @@
 import SwiftUI
 
 // MARK: - AppRouter
-// AuthManager 기반 화면 분기
-// 1. hasSeenOnboarding == false → OnboardingView
-// 2. isLoggedIn == false → LoginView
-// 3. isLoggedIn && !isProfileSet → ProfileSetupView
-// 4. isLoggedIn && isProfileSet → MainTabView
+// 인증 상태에 따른 화면 분기
+// 1. isLoading → SplashView (세션 복원 중)
+// 2. hasSeenOnboarding == false → OnboardingView
+// 3. hasSession == false → LoginView
+// 4. isProfileSet == false → ProfileSetupView
+// 5. 정상 → MainTabView
 struct AppRouter: View {
     @EnvironmentObject private var authManager: AuthManager
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
 
     var body: some View {
         Group {
-            if authManager.isInitializing {
-                // 세션 복원 중 — 스플래시 (로그인 화면 번쩍임 방지)
+            if authManager.isLoading {
                 splashScreen
             } else if !hasSeenOnboarding {
                 OnboardingView {
                     hasSeenOnboarding = true
                 }
                 .transition(.opacity)
-            } else if !authManager.isLoggedIn {
+            } else if !authManager.hasSession {
                 LoginView()
                     .transition(.opacity)
-            } else if authManager.currentUser?.isProfileSet == false {
+            } else if !authManager.currentUser!.isProfileSet {
                 ProfileSetupView()
                     .transition(.opacity)
             } else {
@@ -31,9 +31,9 @@ struct AppRouter: View {
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: authManager.isInitializing)
+        .animation(.easeInOut(duration: 0.25), value: authManager.isLoading)
         .animation(.easeInOut(duration: 0.25), value: hasSeenOnboarding)
-        .animation(.easeInOut(duration: 0.25), value: authManager.isLoggedIn)
+        .animation(.easeInOut(duration: 0.25), value: authManager.hasSession)
         .animation(.easeInOut(duration: 0.25), value: authManager.currentUser?.isProfileSet)
     }
 

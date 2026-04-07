@@ -29,6 +29,18 @@ final class CrewService {
             .value
     }
 
+    func fetchCrew(crewId: UUID) async throws -> Crew {
+        let rows: [Crew] = try await supabase
+            .from("crews")
+            .select(crewSelect)
+            .eq("id", value: crewId.uuidString)
+            .limit(1)
+            .execute()
+            .value
+        guard let crew = rows.first else { throw ParamError.notFound }
+        return crew
+    }
+
     func searchCrews(query: String) async throws -> [Crew] {
         try await supabase
             .from("crews")
@@ -51,11 +63,9 @@ final class CrewService {
         return !rows.isEmpty
     }
 
-    // MARK: - 생성
+    // MARK: - 생성 (userId 외부에서 주입 — 로그인 베이스)
 
-    func createCrew(name: String, type: String, description: String?) async throws -> Crew {
-        let userId = try await supabase.auth.session.user.id
-
+    func createCrew(userId: UUID, name: String, type: String, description: String?) async throws -> Crew {
         struct CrewInsert: Encodable {
             let crewName: String?
             let emotionWord: String?
