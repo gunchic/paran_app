@@ -237,7 +237,7 @@ struct ProfileSetupView: View {
 
     private func checkNickAvailability(_ nick: String) async {
         do {
-            let currentId = authManager.currentUser?.id.uuidString ?? ""
+            let currentId = authManager.currentUser!.id.uuidString
             let response = try await SupabaseManager.shared.client
                 .from("users")
                 .select("id", count: .exact)

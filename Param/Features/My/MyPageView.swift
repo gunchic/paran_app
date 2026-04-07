@@ -35,7 +35,7 @@ struct MyPageView: View {
                                 menuRow(icon: "person.3", title: "내 크루")
                             }
 
-                            NavigationLink(destination: FollowListView(userId: authManager.currentUser?.id ?? UUID())) {
+                            NavigationLink(destination: FollowListView(userId: authManager.currentUser!.id)) {
                                 menuRow(icon: "person.2", title: "팔로우")
                             }
 

@@ -36,7 +36,7 @@ struct CreateWaveView: View {
                         ProgressView().tint(.wave400)
                     } else {
                         Button("올리기") {
-                            guard let userId = authManager.currentUser?.id else { return }
+                            let userId = authManager.currentUser!.id
                             Task { await viewModel.submit(userId: userId) }
                         }
                         .buttonStyle(.paramPrimary)

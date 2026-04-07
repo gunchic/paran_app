@@ -79,7 +79,7 @@ struct HomeFeedView: View {
                         WaveCardView(item: item) { crewId, crewName in
                             // TODO: CrewFeedView 연결
                         } onResonateTap: {
-                            guard let userId = authManager.currentUser?.id else { return }
+                            let userId = authManager.currentUser!.id
                             Task { await viewModel.toggleResonate(item: item, userId: userId) }
                         }
                     }

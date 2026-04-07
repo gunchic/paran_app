@@ -24,7 +24,7 @@ struct WaveDetailView: View {
                         item: viewModel.item,
                         onHashtagTap: { _ in },
                         onResonateTap: {
-                            guard let userId = authManager.currentUser?.id else { return }
+                            let userId = authManager.currentUser!.id
                             Task { await viewModel.toggleResonate(userId: userId) }
                         },
                         hideTopComment: true
@@ -46,9 +46,7 @@ struct WaveDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await viewModel.loadComments()
-            if let userId = authManager.currentUser?.id {
-                await viewModel.loadResonateState(userId: userId)
-            }
+            await viewModel.loadResonateState(userId: authManager.currentUser!.id)
         }
     }
 
@@ -104,8 +102,8 @@ struct WaveDetailView: View {
                         .foregroundColor(.ash)
 
                     Button {
-                        guard let userId = authManager.currentUser?.id else { return }
-                            Task { await viewModel.toggleCommentResonate(comment: comment, userId: userId) }
+                        let userId = authManager.currentUser!.id
+                        Task { await viewModel.toggleCommentResonate(comment: comment, userId: userId) }
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: viewModel.resonatedCommentIds.contains(comment.id) ? "heart.fill" : "heart")
@@ -179,7 +177,7 @@ struct WaveDetailView: View {
 
                 // 등록 버튼
                 Button {
-                    guard let userId = authManager.currentUser?.id else { return }
+                    let userId = authManager.currentUser!.id
                     Task { await viewModel.submitComment(userId: userId) }
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
