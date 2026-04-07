@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MyPageView: View {
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var authManager: AuthManager
 
     @State private var cacheSize: String = ""
     @State private var showClearAlert = false
@@ -34,7 +35,7 @@ struct MyPageView: View {
                                 menuRow(icon: "person.3", title: "내 크루")
                             }
 
-                            NavigationLink(destination: FollowListView(userId: appState.currentUser?.id ?? UUID())) {
+                            NavigationLink(destination: FollowListView(userId: authManager.currentUser?.id ?? UUID())) {
                                 menuRow(icon: "person.2", title: "팔로우")
                             }
 

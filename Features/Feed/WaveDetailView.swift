@@ -23,7 +23,10 @@ struct WaveDetailView: View {
                     WaveCardView(
                         item: viewModel.item,
                         onHashtagTap: { _ in },
-                        onResonateTap: { Task { await viewModel.toggleResonate() } },
+                        onResonateTap: {
+                            guard let userId = authManager.currentUser?.id else { return }
+                            Task { await viewModel.toggleResonate(userId: userId) }
+                        },
                         hideTopComment: true
                     )
 
@@ -43,7 +46,9 @@ struct WaveDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await viewModel.loadComments()
-            await viewModel.loadResonateState()
+            if let userId = authManager.currentUser?.id {
+                await viewModel.loadResonateState(userId: userId)
+            }
         }
     }
 
@@ -99,7 +104,8 @@ struct WaveDetailView: View {
                         .foregroundColor(.ash)
 
                     Button {
-                        Task { await viewModel.toggleCommentResonate(comment: comment) }
+                        guard let userId = authManager.currentUser?.id else { return }
+                            Task { await viewModel.toggleCommentResonate(comment: comment, userId: userId) }
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: viewModel.resonatedCommentIds.contains(comment.id) ? "heart.fill" : "heart")
@@ -223,29 +229,25 @@ final class WaveDetailViewModel: ObservableObject {
         } catch { /* 조용히 처리 */ }
     }
 
-    func loadResonateState() async {
-        guard let userId = try? await SupabaseManager.shared.client.auth.session.user.id else { return }
+    func loadResonateState(userId: UUID) async {
         do {
             let resonated = try await waveService.isResonated(momentId: item.id, userId: userId)
             item.isResonated = resonated
         } catch { }
     }
 
-    func toggleResonate() async {
-        guard let userId = try? await SupabaseManager.shared.client.auth.session.user.id else { return }
-        // 낙관적 업데이트
+    func toggleResonate(userId: UUID) async {
         item.isResonated.toggle()
-        item = item  // trigger update
+        item = item
         do {
             _ = try await waveService.toggleResonate(momentId: item.id, userId: userId)
         } catch {
-            item.isResonated.toggle() // 롤백
+            item.isResonated.toggle()
             item = item
         }
     }
 
-    func toggleCommentResonate(comment: Comment) async {
-        guard let userId = try? await SupabaseManager.shared.client.auth.session.user.id else { return }
+    func toggleCommentResonate(comment: Comment, userId: UUID) async {
         let isCurrently = resonatedCommentIds.contains(comment.id)
         // 낙관적 업데이트
         if isCurrently {
